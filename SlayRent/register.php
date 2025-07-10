@@ -42,8 +42,8 @@
           return;
         }
 
-        if (!/^\d{16}$/.test(authId)) {
-          alert("Authentication ID must be exactly 16 digits.");
+        if (!/^\d{12}$/.test(authId)) {
+          alert("Authentication ID must be exactly 12 digits.");
           e.preventDefault();
           return;
         }
@@ -96,7 +96,7 @@ include 'templates/header.php';
       <input type="text" name="shop_id" placeholder="Shop ID" required><br>
       <input type="tel" name="contact" placeholder="Contact Number" pattern="[0-9]{10}" maxlength="10" title="Enter 10-digit contact number" required><br>
       <input type="email" name="email" placeholder="Email" required><br>
-      <input type="text" name="auth_id" placeholder="Authentication ID (Aadhaar)" pattern="\d{16}" maxlength="16" title="Enter a valid 16-digit Aadhaar number" required><br>
+      <input type="text" name="auth_id" placeholder="Authentication ID (Aadhaar)" pattern="\d{12}" maxlength="12" title="Enter a valid 12-digit Aadhaar number" required><br>
 
     <?php else: ?>
       <h3>Borrower Details</h3>
