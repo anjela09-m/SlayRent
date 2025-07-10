@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $_SESSION['user_type'] = 'borrower';
       $_SESSION['user_id'] = $user['id'];
       $_SESSION['slayrent_id'] = $user['slayrent_id'];
-
+      $_SESSION['name'] = $user['name']; 
       header("Location: dashboard_borrower.php");
       exit();
     }
