@@ -10,6 +10,7 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'borrower') {
 // Fetch session info
 $slayrent_id = $_SESSION['slayrent_id'] ?? '';
 $user_id = $_SESSION['user_id'];
+$name = $_SESSION['name'] ?? 'Borrower'; // ✅ Display actual name if available
 ?>
 
 <!DOCTYPE html>
@@ -51,7 +52,7 @@ $user_id = $_SESSION['user_id'];
 <body>
 
 <div class="dashboard-container">
-  <h2>Welcome to SlayRent, Borrower 👗</h2>
+  <h2>Welcome to SlayRent, <?= htmlspecialchars($name) ?> 👗</h2>
   <p>Your SlayRent ID: <strong><?= htmlspecialchars($slayrent_id) ?></strong></p>
 
   <div class="section">
