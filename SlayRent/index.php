@@ -6,14 +6,34 @@
     <p>Find the perfect costume for every fest — Onam, Christmas, Cultural and Halloween!</p>
   </div>
 </section>
+<br>
+<section style="padding: 50px 20px; background: black;">
+  <h2 style="text-align:center; color:white; font-size: 32px; margin-bottom: 30px;">Featured Costumes</h2>
 
+  <div class="slider-wrapper">
+    <button class="slider-btn left" onclick="scrollLeft()">❮</button>
 
+    <div class="slider" id="costumeScroll">
+      <?php
+      include 'includes/config.php';
+      $costumes = $conn->query("SELECT * FROM costumes ORDER BY id DESC LIMIT 10");
+      while ($c = $costumes->fetch_assoc()): ?>
+        <div class="costume-card">
+          <div class="img-box">
+            <img src="<?= htmlspecialchars($c['image']) ?>" alt="<?= htmlspecialchars($c['title']) ?>">
+          </div>
+          <h4><?= htmlspecialchars($c['title']) ?></h4>
+          <p>₹<?= $c['price_per_day'] ?>/day</p>
+        </div>
+      <?php endwhile; ?>
+    </div>
 
-<section class="image-row">
-  <img src="assets/images/halloween.jpg" alt="Costume Image 1">
-  <img src="assets/images/santa.jpg" alt="Costume Image 2">
-  <img src="assets/images/mrgm.jpg" alt="Costume Image 3">
-   <img src="assets/images/onam.jpg" alt="Costume Image 4">
+    <button class="slider-btn right" onclick="scrollRight()">❯</button>
+  </div>
+
+  <div style="text-align: center; margin-top: 30px;">
+    <button onclick="showLoginPrompt()" class="see-more-btn">✨ See More Costumes</button>
+  </div>
 </section>
 
 <section class="section about" id="about">
@@ -38,7 +58,6 @@
     </div>
   </div>
 </section>
-
 
 <!-- HOW TO RENT -->
 <section class="section how" id="howtorent">
@@ -70,5 +89,88 @@
   <p>Follow us on <a href="https://instagram.com/slay.rent" target="_blank">@slay.rent</a></p>
 </section>
 
+<script>
+  function scrollLeft() {
+    document.getElementById('costumeScroll').scrollLeft -= 250;
+  }
+
+  function scrollRight() {
+    document.getElementById('costumeScroll').scrollLeft += 250;
+  }
+
+  function showLoginPrompt() {
+    if (confirm("Please login or register to view full costume listings.")) {
+      window.location.href = 'login.php?redirect=view_costumes.php';
+    }
+  }
+</script>
+
+<style>
+  .slider-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .slider {
+    display: flex;
+    gap: 25px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 20px 0;
+  }
+  .costume-card {
+    min-width: 220px;
+    background: #111;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.3s;
+    color: white;
+  }
+  .costume-card:hover {
+    transform: scale(1.05);
+  }
+  .img-box {
+    border-radius: 12px;
+    overflow: hidden;
+    height: 220px;
+    margin-bottom: 10px;
+  }
+  .costume-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.4s ease-in-out;
+  }
+  .slider-btn {
+    background-color:white;
+    color: black;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 2;
+    transition: background 0.3s;
+  }
+  .slider-btn:hover {
+    background-color: white;
+  }
+  .see-more-btn {
+    background-color: white;
+    color: black;
+    padding: 12px 28px;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  .see-more-btn:hover {
+    background-color: white;
+  }
+</style>
 
 <?php include 'templates/footer.php'; ?>
