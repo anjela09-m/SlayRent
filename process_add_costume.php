@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   // ✅ Save image *path* in 'image' column
-  $stmt = $conn->prepare("INSERT INTO costumes (lender_id, title, category, size, quantity, price_per_day, description, image, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available')");
+  $stmt = $conn->prepare("INSERT INTO costumes (lender_id, title, category, size, quantity, price_per_day, description, image, availability) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available')");
   $stmt->bind_param("isssidss", $lender_id, $title, $category, $size, $quantity, $price, $description, $imagePath);
 
   if ($stmt->execute()) {
