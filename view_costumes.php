@@ -124,7 +124,7 @@ $showLoginMessage = !isset($_SESSION['user_type']) || $_SESSION['user_type'] !==
   <div class="costume-grid">
     <?php while ($row = $result->fetch_assoc()): ?>
       <div class="costume-card">
-        <img src="uploads/<?= htmlspecialchars($row['image_path']) ?>" alt="Costume Image">
+        <img src="<?= htmlspecialchars($row['image_path']) ?>" alt="Costume Image">
         <h4><?= htmlspecialchars($row['title']) ?></h4>
         <p>₹<?= $row['price_per_day'] ?>/day</p>
         <p>Size: <?= htmlspecialchars($row['size']) ?> | <?= htmlspecialchars($row['category']) ?></p>
