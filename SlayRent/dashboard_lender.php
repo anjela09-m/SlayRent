@@ -42,51 +42,78 @@ while ($row = $res->fetch_assoc()) {
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #fdf5fa;
-    }
-    .dashboard {
-      display: flex;
+      background-color: #fff4fa;
+      color: #333;
     }
     .sidebar {
-      position: fixed;
-      top: 0;
-      left: -260px;
       width: 250px;
-      height: 100%;
       background-color: #e190ba;
       color: white;
       padding: 25px;
-      transition: left 0.3s ease-in-out;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: -250px;
+      transition: 0.3s;
       z-index: 1000;
     }
     .sidebar.active {
       left: 0;
     }
     .sidebar h3 {
-      margin-top: 0;
-      font-size: 24px;
+      font-size: 22px;
+      margin-bottom: 20px;
     }
     .sidebar ul {
       list-style: none;
       padding: 0;
     }
     .sidebar ul li {
-      margin: 18px 0;
+      margin: 15px 0;
     }
     .sidebar ul li a {
       color: white;
       text-decoration: none;
       font-size: 16px;
     }
-    .main-content {
-      flex-grow: 1;
-      padding: 40px;
-      margin-left: 0;
-      transition: margin-left 0.3s ease-in-out;
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 999;
+    }
+    .overlay.active {
+      display: block;
+    }
+    .main-content {
+      margin-left: 0;
+      transition: 0.3s;
+      padding: 30px;
     }
     .main-content.shifted {
       margin-left: 250px;
+    }
+    .hamburger {
+      font-size: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+    .welcome-section {
+      margin-bottom: 30px;
+    }
+    .welcome-section h2 {
+      font-size: 28px;
+      color: #c46d9e;
+    }
+    .dashboard-flex {
+      display: flex;
+      gap: 30px;
     }
     .card {
       background: white;
@@ -95,75 +122,44 @@ while ($row = $res->fetch_assoc()) {
       box-shadow: 0 0 10px rgba(0,0,0,0.05);
       margin-bottom: 30px;
     }
-    .card h2 {
-      margin-top: 0;
-      color: #c46d9e;
+    .left-panel {
+      flex: 2;
     }
-    .button {
-      background-color: #e190ba;
-      color: white;
-      padding: 10px 22px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      text-decoration: none;
-      font-size: 15px;
-      display: inline-block;
-      margin-top: 10px;
-    }
-    .button:hover {
-      background-color: #c46d9e;
-    }
-    .hamburger {
-      font-size: 26px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      color: #e190ba;
-      margin-bottom: 20px;
-      z-index: 1001;
-    }
-    .overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      z-index: 999;
-    }
-    .overlay.active {
-      display: block;
+    .right-panel {
+      flex: 1;
     }
     .costume-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 20px;
     }
     .costume-card {
       background: #fff;
       border-radius: 10px;
-      overflow: hidden;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 10px;
+      padding: 15px;
       text-align: center;
     }
     .costume-card img {
       width: 100%;
-      height: 200px;
+      height: 180px;
       object-fit: cover;
       border-radius: 10px;
     }
-    .costume-card h4 {
-      margin: 10px 0 5px;
-      font-size: 16px;
-      color: #c46d9e;
-    }
-    .costume-card p {
-      margin: 0;
+    .button {
+      background-color: #e190ba;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
       font-size: 14px;
-      color: #666;
+      margin: 5px;
+      display: inline-block;
+    }
+    .button:hover {
+      background-color: #c46d9e;
     }
   </style>
 </head>
@@ -172,10 +168,10 @@ while ($row = $res->fetch_assoc()) {
 <div class="sidebar" id="sidebar">
   <h3><?= htmlspecialchars($shop_name) ?></h3>
   <ul>
-    <li><a href="#">✏️ Edit Profile</a></li>
+    <li><a href="edit_profile_lender.php">✏️ Edit Profile</a></li>
     <li><a href="#">📅 Joined <?= $joined_days ?> days ago</a></li>
-    <li><a href="#">📝 Requests from Borrowers</a></li>
-    <li><a href="logout.php" style="color: #fff;">🚪 Logout</a></li>
+    <li><a href="#">📦 Requests from Borrowers</a></li>
+    <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
 </div>
 
@@ -183,38 +179,52 @@ while ($row = $res->fetch_assoc()) {
 
 <div class="main-content" id="mainContent">
   <button class="hamburger" onclick="toggleSidebar()">☰</button>
-  <h2>Welcome, <?= htmlspecialchars($lender_name) ?> 🛍️</h2>
-  <p>Manage your costumes and rental requests in one place.</p>
 
-  <div class="card">
-    <h2>📸 Add a New Costume</h2>
-    <p>Add costumes to your shop and start renting!</p>
-    <a href="add_costume.php" class="button">Upload Costume</a>
+  <div class="welcome-section">
+    <h2>Welcome, <?= htmlspecialchars($lender_name) ?> 🛍️</h2>
+    <p>Manage your costumes and rental requests in one place.</p>
   </div>
 
-  <div class="card">
-    <h2>🎽 My Costume Listings</h2>
-    <div class="costume-grid">
-      <?php if (count($costumes) === 0): ?>
-        <p>No costumes uploaded yet.</p>
-      <?php else: ?>
-        <?php foreach ($costumes as $c): ?>
-          <div class="costume-card">
-            <img src="<?= htmlspecialchars($c['image']) ?>" alt="Costume">
+  <div class="dashboard-flex">
+    <div class="left-panel">
+      <div class="card">
+        <h3>📸 Add a New Costume</h3>
+        <p>Add costumes to your shop and start renting!</p>
+        <a href="add_costume.php" class="button">Upload Costume</a>
+      </div>
 
-            <h4><?= htmlspecialchars($c['title']) ?></h4>
-            <p>₹<?= htmlspecialchars($c['price_per_day']) ?> | <?= htmlspecialchars($c['size']) ?></p>
-            <p>Status: <b style="color:<?= $c['availability'] === 'available' ? 'green' : 'red' ?>"><?= $c['availability'] ?></b></p>
-            <a href="edit_costume.php?id=<?= $c['id'] ?>" class="button">Edit</a>
-            <?php if ($c['availability'] === 'available'): ?>
-              <a href="mark_unavailable.php?id=<?= $c['id'] ?>" class="button" style="background-color: crimson;">Out of Stock</a>
-            <?php else: ?>
-              <a href="mark_available.php?id=<?= $c['id'] ?>" class="button">Mark Available</a>
-            <?php endif; ?>
-            <a href="delete_costume.php?id=<?= $c['id'] ?>" class="button" onclick="return confirm('Are you sure you want to delete this costume?');">Delete</a>
-          </div>
-        <?php endforeach; ?>
-      <?php endif; ?>
+      <div class="card">
+        <h3>🎽 My Costume Listings</h3>
+        <div class="costume-grid">
+          <?php if (count($costumes) === 0): ?>
+            <p>No costumes uploaded yet.</p>
+          <?php else: ?>
+           <?php foreach ($costumes as $c): ?>
+  <div class="costume-card">
+    <img src="<?= htmlspecialchars($c['image']) ?>" alt="Costume">
+    <h4><?= htmlspecialchars($c['title']) ?></h4>
+    <p>₹<?= htmlspecialchars($c['price_per_day']) ?> | <?= htmlspecialchars($c['size']) ?></p>
+    <p>Status: <b style="color:<?= $c['availability'] === 'available' ? 'green' : 'red' ?>"><?= $c['availability'] ?></b></p>
+    <a href="edit_costume.php?id=<?= $c['id'] ?>" class="button">Edit</a>
+    <?php if ($c['availability'] === 'available'): ?>
+      <a href="mark_unavailable.php?id=<?= $c['id'] ?>" class="button" style="background-color: crimson;">Out of Stock</a>
+    <?php else: ?>
+      <a href="mark_available.php?id=<?= $c['id'] ?>" class="button">Mark Available</a>
+    <?php endif; ?>
+    <a href="delete_costume.php?id=<?= $c['id'] ?>" class="button" onclick="return confirm('Are you sure you want to delete this costume?');">Delete</a>
+  </div>
+<?php endforeach; ?>
+          <?php endif; ?>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="card">
+        <h3>📦 Rental Requests</h3>
+        <p>Borrower requests will appear here.</p>
+        <!-- We'll dynamically load requests here later -->
+      </div>
     </div>
   </div>
 </div>
