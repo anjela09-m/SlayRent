@@ -117,7 +117,7 @@ if (isset($_SESSION['msg'])) {
   <h2>Lenders</h2>
   <table>
     <tr>
-      <th>ID</th><th>Shop Name</th><th>Email</th><th>Shop ID</th><th>Action</th>
+      <th>ID</th><th>Shop Name</th><th>Email</th><th>Action</th>
     </tr>
     <?php
     $lenders = mysqli_query($conn, "SELECT * FROM lenders");
