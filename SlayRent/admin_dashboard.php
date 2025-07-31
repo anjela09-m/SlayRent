@@ -130,7 +130,8 @@ $transactions = mysqli_query($conn, $transactionQuery);
 </head>
 <body>
 
-<button class="hamburger" onclick="toggleSidebar()">☰</button>
+<button class="hamburger" id="hamburger">☰</button>
+
 
 <div class="sidebar" id="sidebar">
   <a href="#">Dashboard</a>
@@ -194,38 +195,38 @@ $transactions = mysqli_query($conn, $transactionQuery);
 </div>
 
 <script>
-    const hamburger = document.getElementById('hamburger');
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  const mainContent = document.getElementById('mainContent');
 
-    hamburger.addEventListener('click', () => {
-      sidebar.classList.add('open');
-      hamburger.classList.add('hidden');
-    });
+  hamburger.addEventListener('click', () => {
+    sidebar.classList.add('open');
+    hamburger.classList.add('hidden');
+  });
 
-    mainContent.addEventListener('click', () => {
-      if (sidebar.classList.contains('open')) {
-        sidebar.classList.remove('open');
-        hamburger.classList.remove('hidden');
-      }
-    });
-function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("active");
-  document.getElementById("mainContent").classList.toggle("shifted");
-}
+  // Close sidebar on clicking outside
+  document.addEventListener('click', function (e) {
+    const clickedInsideSidebar = sidebar.contains(e.target);
+    const clickedHamburger = hamburger.contains(e.target);
 
-let viewAll = false;
+    if (!clickedInsideSidebar && !clickedHamburger && sidebar.classList.contains('open')) {
+      sidebar.classList.remove('open');
+      hamburger.classList.remove('hidden');
+    }
+  });
 
-function toggleCostumes() {
-  const btn = document.getElementById("toggleBtn");
-  fetch(`fetch_costumes.php?all=${viewAll ? 0 : 1}`)
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("costumeCards").innerHTML = data;
-      viewAll = !viewAll;
-      btn.textContent = viewAll ? "View Less" : "View All";
-    });
-}
+  let viewAll = false;
+
+  function toggleCostumes() {
+    const btn = document.getElementById("toggleBtn");
+    fetch(`fetch_costumes.php?all=${viewAll ? 0 : 1}`)
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("costumeCards").innerHTML = data;
+        viewAll = !viewAll;
+        btn.textContent = viewAll ? "View Less" : "View All";
+      });
+  }
 </script>
 
 </body>
