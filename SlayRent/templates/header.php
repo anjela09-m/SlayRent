@@ -20,7 +20,7 @@
   <ul style="list-style: none; display: flex; gap: 25px; margin: 0; padding: 0;">
     <li><a href="index.php" style="color: white; text-decoration: none;">Home</a></li>
     <li><a href="index.php#about" style="color: white; text-decoration: none;">About Us</a></li>
-    <li><a href="index.php#how" style="color: white; text-decoration: none;">How to Rent</a></li>
+    <li><a href="index.php#how-it-works" style="color: white; text-decoration: none;">How to Rent</a></li>
     <li><a href="index.php#contact" style="color: white; text-decoration: none;">Contact</a></li>
     <li><a href="login.php" style="color: white; text-decoration: none;">Login</a></li>
   </ul>
