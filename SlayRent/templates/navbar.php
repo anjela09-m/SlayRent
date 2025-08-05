@@ -7,9 +7,9 @@
     <nav>
   <ul>
     <li><a href="index.php">Home</a></li>
-    <li><a href="index.php#about">About Us</a></li>
-    <li><a href="index.php#howtorent">How to Rent</a></li>
-    <li><a href="index.php#contact">Contact</a></li>
+    <li><a href="#about">About Us</a></li>
+    <li><a href="#how-it-works">How to Rent</a></li>
+    <li><a href="#contact">Contact</a></li>
     <li><a href="login.php">Login</a></li>
     <li><a href="register_type.php">Register</a></li>
   </ul>
