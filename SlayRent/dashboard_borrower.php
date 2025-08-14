@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'includes/config.php';
+include 'includes/config.php'; 
 
 if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'borrower') {
   header("Location: login.php");
@@ -77,21 +77,6 @@ while ($row = $pres->fetch_assoc()) {
   $pending_returns[] = $row;
 }
 ?>
-<script>
-  document.addEventListener('click', function(event) {
-    const sidebar = document.querySelector('.sidebar');
-    const hamburger = document.querySelector('.hamburger');
-    
-    // If sidebar is active AND click is outside both sidebar and hamburger
-    if (sidebar.classList.contains('active') &&
-        !sidebar.contains(event.target) &&
-        !hamburger.contains(event.target)) {
-      sidebar.classList.remove('active');
-    }
-  });
-  
-</script>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -107,18 +92,34 @@ while ($row = $pres->fetch_assoc()) {
       margin: 0;
       background: #fdf5fa;
     }
+    /* Hamburger with animation */
     .hamburger {
       position: fixed;
       top: 15px;
       left: 15px;
       z-index: 1000;
-      background: #f1b3d3ff;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 24px;
+      height: 18px;
       cursor: pointer;
+    }
+    .hamburger span {
+      display: block;
+      height: 3px;
+      background-color: #000;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    .hamburger.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
     }
     .sidebar {
       position: fixed;
@@ -144,66 +145,16 @@ while ($row = $pres->fetch_assoc()) {
       display: block;
       margin: 15px 0;
     }
-    
+    .sidebar .card {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
     .main {
       margin-left: 0;
       padding: 30px 40px 40px 40px;
       transition: margin-left 0.3s ease;
-    }
-    .sidebar.active ~ .main {
-      margin-left: 250px;
-    }
-    .dashboard-layout {
-      display: flex;
-      gap: 30px;
-      margin-top: 20px;
-    }
-    .content-area {
-      flex: 3;
-    }
-    .sidebar-right {
-      flex: 1;
-    }
-    .search-bar-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .search-bar {
-      flex: 1;
-      padding: 12px 16px;
-      border-radius: 30px;
-      border: 1px solid #ccc;
-      font-size: 15px;
-    }
-    .filter-toggle {
-      background: #e190ba;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 38px;
-      height: 38px;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    .filter-options {
-      display: none;
-      background: #fff;
-      border: 1px solid #ccc;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    .filter-options.show {
-      display: block;
-    }
-    .filter-options input, .filter-options select {
-      padding: 10px;
-      margin-right: 10px;
-      margin-top: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
     }
     .costume-grid {
       display: grid;
@@ -231,83 +182,76 @@ while ($row = $pres->fetch_assoc()) {
       display: inline-block;
       margin-top: 10px;
     }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
   </style>
 </head>
 <body>
-  <button class="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('active')">☰</button>
+  <!-- Animated Hamburger -->
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
 
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <h3><?= htmlspecialchars($name) ?></h3>
     <a href="edit_borrower_profile.php">✏️ Edit Profile</a>
     <a href="#">📅 Joined <?= $joined_days ?> days ago</a>
     <a href="#">📦 My Rentals</a>
+
+    <div class="card">
+      <h4>🕓 Recent Rentals</h4>
+      <?php if (empty($recent_rentals)): ?>
+        <p>No rentals yet.</p>
+      <?php else: foreach ($recent_rentals as $r): ?>
+        <p><b><?= htmlspecialchars($r['title']) ?></b> on <?= date('d M Y', strtotime($r['rented_at'])) ?></p>
+      <?php endforeach; endif; ?>
+    </div>
+    <div class="card">
+      <h4>🔁 Pending Returns</h4>
+      <?php if (empty($pending_returns)): ?>
+        <p>No pending returns.</p>
+      <?php else: foreach ($pending_returns as $p): ?>
+        <p><?= htmlspecialchars($p['title']) ?> → Return by <?= date('d M Y', strtotime($p['return_by'])) ?></p>
+      <?php endforeach; endif; ?>
+    </div>
+
     <a href="logout.php">🚪 Logout</a>
   </div>
 
   <div class="main">
     <h2>Welcome, <?= htmlspecialchars($name) ?> 👋</h2>
-
-    <form method="GET" class="search-bar-container">
-      <input type="text" class="search-bar" name="keyword" placeholder="Search by title, event, or keyword..." value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
-      <button type="button" class="filter-toggle" onclick="document.getElementById('filters').classList.toggle('show')">⚙</button>
-    </form>
-
-    <form method="GET" class="filter-options" id="filters">
-      <select name="category">
-        <option value="">All Categories</option>
-        <option value="Onam" <?= ($_GET['category'] ?? '') === 'Onam' ? 'selected' : '' ?>>Onam</option>
-        <option value="Christmas" <?= ($_GET['category'] ?? '') === 'Christmas' ? 'selected' : '' ?>>Christmas</option>
-        <option value="Cultural Fest" <?= ($_GET['category'] ?? '') === 'Cultural Fest' ? 'selected' : '' ?>>Cultural Fest</option>
-        <option value="Halloween" <?= ($_GET['category'] ?? '') === 'Halloween' ? 'selected' : '' ?>>Halloween</option>
-      </select>
-      <input type="number" name="min_price" placeholder="Min ₹" value="<?= htmlspecialchars($_GET['min_price'] ?? '') ?>">
-      <input type="number" name="max_price" placeholder="Max ₹" value="<?= htmlspecialchars($_GET['max_price'] ?? '') ?>">
-      <button type="submit" class="button">Apply Filters</button>
-    </form>
-
-    <div class="dashboard-layout">
-      <div class="content-area">
-        <div class="costume-grid">
-          <?php if (empty($costumes)): ?>
-            <p style="grid-column: 1/-1;">No costumes found!</p>
-          <?php else: foreach ($costumes as $c): ?>
-            <div class="costume-card">
-              <img src="<?= htmlspecialchars($c['image']) ?>" alt="Costume">
-              <h4><?= htmlspecialchars($c['title']) ?></h4>
-              <p>₹<?= $c['price_per_day'] ?>/day | Size: <?= htmlspecialchars($c['size']) ?></p>
-              <p><?= htmlspecialchars($c['category']) ?></p>
-              <a href="rent_costume.php?id=<?= $c['id'] ?>" class="button">Rent Now</a>
-            </div>
-          <?php endforeach; endif; ?>
+    <div class="costume-grid">
+      <?php if (empty($costumes)): ?>
+        <p style="grid-column: 1/-1;">No costumes found!</p>
+      <?php else: foreach ($costumes as $c): ?>
+        <div class="costume-card">
+          <img src="<?= htmlspecialchars($c['image']) ?>" alt="Costume">
+          <h4><?= htmlspecialchars($c['title']) ?></h4>
+          <p>₹<?= $c['price_per_day'] ?>/day | Size: <?= htmlspecialchars($c['size']) ?></p>
+          <p><?= htmlspecialchars($c['category']) ?></p>
+          <a href="rent_costume.php?id=<?= $c['id'] ?>" class="button">Rent Now</a>
         </div>
-      </div>
-
-      <div class="sidebar-right">
-        <div class="card">
-          <h4>🕓 Recent Rentals</h4>
-          <?php if (empty($recent_rentals)): ?>
-            <p>No rentals yet.</p>
-          <?php else: foreach ($recent_rentals as $r): ?>
-            <p><b><?= htmlspecialchars($r['title']) ?></b> on <?= date('d M Y', strtotime($r['rented_at'])) ?></p>
-          <?php endforeach; endif; ?>
-        </div>
-        <div class="card">
-          <h4>🔁 Pending Returns</h4>
-          <?php if (empty($pending_returns)): ?>
-            <p>No pending returns.</p>
-          <?php else: foreach ($pending_returns as $p): ?>
-            <p><?= htmlspecialchars($p['title']) ?> → Return by <?= date('d M Y', strtotime($p['return_by'])) ?></p>
-          <?php endforeach; endif; ?>
-        </div>
-      </div>
+      <?php endforeach; endif; ?>
     </div>
   </div>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+
+  hamburger.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+    hamburger.classList.toggle('active');
+  });
+
+  document.addEventListener('click', (event) => {
+    if (sidebar.classList.contains('active') &&
+        !sidebar.contains(event.target) &&
+        !hamburger.contains(event.target)) {
+      sidebar.classList.remove('active');
+      hamburger.classList.remove('active');
+    }
+  });
+</script>
 </body>
 </html>
