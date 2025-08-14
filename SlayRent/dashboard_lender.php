@@ -39,16 +39,24 @@ while ($row = $res->fetch_assoc()) {
   <title>Lender Dashboard | SlayRent</title>
   <link rel="stylesheet" href="assets/css/styles.css">
   <style>
+    :root {
+      --lavender: #D1C2D9;
+      --charcoal: #191919;
+      --pale-silver: #ECECEC;
+      --text-light: #ffffff;
+    }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #fff4fa;
-      color: #333;
+      background-color: var(--lavender);
+      color: var(--charcoal);
     }
+
     .sidebar {
       width: 250px;
-      background-color: #e190ba;
-      color: white;
+      background-color: var(--charcoal);
+      color: var(--text-light);
       padding: 25px;
       height: 100vh;
       position: fixed;
@@ -72,10 +80,11 @@ while ($row = $res->fetch_assoc()) {
       margin: 15px 0;
     }
     .sidebar ul li a {
-      color: white;
+      color: var(--text-light);
       text-decoration: none;
       font-size: 16px;
     }
+
     .overlay {
       position: fixed;
       top: 0;
@@ -89,56 +98,69 @@ while ($row = $res->fetch_assoc()) {
     .overlay.active {
       display: block;
     }
+
     .main-content {
       margin-left: 0;
       transition: 0.3s;
       padding: 30px;
+      background-color: var(--pale-silver);
+      min-height: 100vh;
     }
     .main-content.shifted {
       margin-left: 250px;
     }
+
     .hamburger {
       font-size: 24px;
       background: none;
       border: none;
+      color: var(--charcoal);
       cursor: pointer;
       margin-bottom: 15px;
     }
+
     .welcome-section {
       margin-bottom: 30px;
     }
     .welcome-section h2 {
       font-size: 28px;
-      color: #c46d9e;
+      color: var(--charcoal);
     }
+
     .dashboard-flex {
       display: flex;
       gap: 30px;
     }
+
     .card {
-      background: white;
+      background: var(--lavender);
       padding: 25px;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       margin-bottom: 30px;
+      color: var(--charcoal);
     }
+
     .left-panel {
       flex: 2;
     }
     .right-panel {
       flex: 1;
     }
+
     .costume-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 20px;
     }
+
     .costume-card {
-      background: #fff;
+      background: var(--lavender);
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       padding: 15px;
       text-align: center;
+      color: var(--charcoal);
     }
     .costume-card img {
       width: 100%;
@@ -146,9 +168,10 @@ while ($row = $res->fetch_assoc()) {
       object-fit: cover;
       border-radius: 10px;
     }
+
     .button {
-      background-color: #e190ba;
-      color: white;
+      background-color: var(--charcoal);
+      color: var(--text-light);
       padding: 10px 18px;
       border: none;
       border-radius: 6px;
@@ -159,19 +182,21 @@ while ($row = $res->fetch_assoc()) {
       display: inline-block;
     }
     .button:hover {
-      background-color: #c46d9e;
+      background-color: var(--text-light);
+      color: var(--charcoal);
     }
-  </style>
+</style>
+
 </head>
 <body>
 
 <div class="sidebar" id="sidebar">
   <h3><?= htmlspecialchars($shop_name) ?></h3>
   <ul>
-    <li><a href="edit_profile_lender.php">✏️ Edit Profile</a></li>
-    <li><a href="#">📅 Joined <?= $joined_days ?> days ago</a></li>
-    <li><a href="#">📦 Requests from Borrowers</a></li>
-    <li><a href="logout.php">🚪 Logout</a></li>
+    <li><a href="edit_profile_lender.php"> Edit Profile</a></li>
+    <li><a href="#"> Joined <?= $joined_days ?> days ago</a></li>
+    <li><a href="#"> Requests from Borrowers</a></li>
+    <li><a href="logout.php"> Logout</a></li>
   </ul>
 </div>
 
@@ -181,20 +206,20 @@ while ($row = $res->fetch_assoc()) {
   <button class="hamburger" onclick="toggleSidebar()">☰</button>
 
   <div class="welcome-section">
-    <h2>Welcome, <?= htmlspecialchars($lender_name) ?> 🛍️</h2>
+    <h2>Welcome, <?= htmlspecialchars($lender_name) ?> </h2>
     <p>Manage your costumes and rental requests in one place.</p>
   </div>
 
   <div class="dashboard-flex">
     <div class="left-panel">
       <div class="card">
-        <h3>📸 Add a New Costume</h3>
+        <h3>Add a New Costume</h3>
         <p>Add costumes to your shop and start renting!</p>
         <a href="add_costume.php" class="button">Upload Costume</a>
       </div>
 
       <div class="card">
-        <h3>🎽 My Costume Listings</h3>
+        <h3>My Costume Listings</h3>
         <div class="costume-grid">
           <?php if (count($costumes) === 0): ?>
             <p>No costumes uploaded yet.</p>
@@ -204,10 +229,10 @@ while ($row = $res->fetch_assoc()) {
     <img src="<?= htmlspecialchars($c['image']) ?>" alt="Costume">
     <h4><?= htmlspecialchars($c['title']) ?></h4>
     <p>₹<?= htmlspecialchars($c['price_per_day']) ?> | <?= htmlspecialchars($c['size']) ?></p>
-    <p>Status: <b style="color:<?= $c['availability'] === 'available' ? 'green' : 'red' ?>"><?= $c['availability'] ?></b></p>
+    <p>Status: <b style="color:<?= $c['availability'] === 'available' ? 'lightgreen' : 'crimson' ?>"><?= $c['availability'] ?></b></p>
     <a href="edit_costume.php?id=<?= $c['id'] ?>" class="button">Edit</a>
     <?php if ($c['availability'] === 'available'): ?>
-      <a href="mark_unavailable.php?id=<?= $c['id'] ?>" class="button" style="background-color: crimson;">Out of Stock</a>
+      <a href="mark_unavailable.php?id=<?= $c['id'] ?>" class="button" style="background-color: crimson; color: white;">Out of Stock</a>
     <?php else: ?>
       <a href="mark_available.php?id=<?= $c['id'] ?>" class="button">Mark Available</a>
     <?php endif; ?>
@@ -221,9 +246,8 @@ while ($row = $res->fetch_assoc()) {
 
     <div class="right-panel">
       <div class="card">
-        <h3>📦 Rental Requests</h3>
+        <h3>Rental Requests</h3>
         <p>Borrower requests will appear here.</p>
-        <!-- We'll dynamically load requests here later -->
       </div>
     </div>
   </div>
