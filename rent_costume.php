@@ -82,7 +82,7 @@ $costume = $result->fetch_assoc();
 <body>
     <div class="rent-box">
         <h2>Rent: <?php echo $costume['title']; ?></h2>
-        <img src="<?= htmlspecialchars($c['image']) ?>" alt="Costume">
+       <img src="<?= htmlspecialchars($costume['image']) ?>" alt="Costume" class="costume-img">
 
         <p><strong>Price per day:</strong> ₹<?php echo $costume['price_per_day']; ?></p>
 
