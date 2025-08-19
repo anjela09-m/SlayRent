@@ -94,10 +94,11 @@ while ($row = $reqRes->fetch_assoc()) {
     <div class="request-box" id="request-<?= $r['id'] ?>">
       <p><b><?= htmlspecialchars($r['borrower_name']) ?></b> wants <i><?= htmlspecialchars($r['costume_title']) ?></i></p>
       <p>Status: <span id="status-req-<?= $r['id'] ?>"><?= ucfirst($r['status']) ?></span></p>
-      <?php if ($r['status'] === 'pending'): ?>
-        <button class="accept-btn" onclick="updateRequestStatus(<?= $r['id'] ?>, 'accepted')">Accept</button>
-        <button class="reject-btn" onclick="updateRequestStatus(<?= $r['id'] ?>, 'rejected')">Reject</button>
-      <?php endif; ?>
+      <?php if (isset($r['status']) && trim(strtolower($r['status'])) === 'pending'): ?>
+  <button class="accept-btn" onclick="updateRequestStatus(<?= $r['id'] ?>, 'accepted')">Accept</button>
+  <button class="reject-btn" onclick="updateRequestStatus(<?= $r['id'] ?>, 'rejected')">Reject</button>
+<?php endif; ?>
+
     </div>
   <?php endforeach; ?>
 <?php endif; ?>
