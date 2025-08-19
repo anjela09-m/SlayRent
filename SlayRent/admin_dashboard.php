@@ -1,5 +1,4 @@
 <?php
-session_start();
 require 'includes/config.php';
 
 if (!isset($_SESSION['admin'])) {
