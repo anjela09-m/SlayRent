@@ -1,5 +1,4 @@
 <?php
-session_start();
 include 'includes/config.php'; 
 
 if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'borrower') {
@@ -11,6 +10,7 @@ $user_id = $_SESSION['user_id'];
 $name = $_SESSION['name'] ?? 'Borrower';
 $joined_days = 0;
 
+// Calculate joined days
 $stmt = $conn->prepare("SELECT created_at FROM borrowers WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -20,7 +20,7 @@ if ($row = $result->fetch_assoc()) {
 }
 
 // Costume filtering
-$where = "availability = 'available'";
+$where = "1"; // Show all
 $params = [];
 $types = "";
 
@@ -46,6 +46,7 @@ if (!empty($_GET['max_price'])) {
   $types .= "i";
 }
 
+// Fetch costumes
 $sql = "SELECT * FROM costumes WHERE $where ORDER BY id DESC";
 $costumes = [];
 $stmt = $conn->prepare($sql);
@@ -58,23 +59,20 @@ while ($row = $res->fetch_assoc()) {
   $costumes[] = $row;
 }
 
-// Rentals
-$recent_rentals = [];
-$rstmt = $conn->prepare("SELECT r.*, c.title FROM rentals r JOIN costumes c ON r.costume_id = c.id WHERE r.borrower_id = ? ORDER BY r.rented_at DESC LIMIT 2");
-$rstmt->bind_param("i", $user_id);
-$rstmt->execute();
-$rres = $rstmt->get_result();
-while ($row = $rres->fetch_assoc()) {
-  $recent_rentals[] = $row;
-}
-
-$pending_returns = [];
-$pstmt = $conn->prepare("SELECT r.*, c.title FROM rentals r JOIN costumes c ON r.costume_id = c.id WHERE r.borrower_id = ? AND r.return_status = 'pending'");
-$pstmt->bind_param("i", $user_id);
-$pstmt->execute();
-$pres = $pstmt->get_result();
-while ($row = $pres->fetch_assoc()) {
-  $pending_returns[] = $row;
+// Fetch borrower's rental requests
+$requests = [];
+$qstmt = $conn->prepare("
+  SELECT rr.id, rr.status, rr.request_date, c.title AS costume_title
+  FROM rental_requests rr
+  JOIN costumes c ON rr.costume_id = c.id
+  WHERE rr.borrower_id = ?
+  ORDER BY rr.request_date DESC
+");
+$qstmt->bind_param("i", $user_id);
+$qstmt->execute();
+$qres = $qstmt->get_result();
+while ($row = $qres->fetch_assoc()) {
+  $requests[] = $row;
 }
 ?>
 <!DOCTYPE html>
@@ -84,174 +82,86 @@ while ($row = $pres->fetch_assoc()) {
   <title>Borrower Dashboard | SlayRent</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
+    :root {
+      --lavender: #D1C2D9;
+      --charcoal: #191919;
+      --pale-silver: #ECECEC;
+      --text-light: #ffffff;
+      --red: #ff4d4d;
+      --green: #4caf50;
+      --orange: #ff9800;
     }
-    body {
-      margin: 0;
-      background: #fdf5fa;
-    }
-    /* Hamburger with animation */
-    .hamburger {
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      width: 24px;
-      height: 18px;
-      cursor: pointer;
-    }
-    .hamburger span {
-      display: block;
-      height: 3px;
-      background-color: #000;
-      border-radius: 2px;
-      transition: all 0.3s ease;
-    }
-    .hamburger.active span:nth-child(1) {
-      transform: rotate(45deg) translate(5px, 5px);
-    }
-    .hamburger.active span:nth-child(2) {
-      opacity: 0;
-    }
-    .hamburger.active span:nth-child(3) {
-      transform: rotate(-45deg) translate(5px, -5px);
-    }
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -260px;
-      width: 240px;
-      height: 100vh;
-      background: #ea7fb8ff;
-      color: white;
-      padding: 30px 20px;
-      transition: left 0.3s ease;
-      z-index: 999;
-    }
-    .sidebar.active {
-      left: 0;
-    }
-    .sidebar h3 {
-      margin-bottom: 20px;
-    }
-    .sidebar a {
-      color: white;
-      text-decoration: none;
-      display: block;
-      margin: 15px 0;
-    }
-    .sidebar .card {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 15px;
-    }
-    .main {
-      margin-left: 0;
-      padding: 30px 40px 40px 40px;
-      transition: margin-left 0.3s ease;
-    }
-    .costume-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-    }
-    .costume-card {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    .costume-card img {
-      width: 100%; height: 180px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
-    .button {
-      background: #e190ba;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 6px;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 10px;
-    }
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { margin:0; background: var(--lavender); color: var(--charcoal); }
+    .sidebar { position:fixed; top:0; left:0; width:240px; height:100vh; background:var(--charcoal); color:var(--text-light); padding:30px 20px; }
+    .sidebar h3 { margin-bottom:20px; }
+    .sidebar a { color:var(--text-light); text-decoration:none; display:block; margin:15px 0; }
+    .main { margin-left:260px; padding:30px 40px 40px 40px; background: var(--pale-silver); min-height:100vh; }
+    .costume-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:20px; }
+    .costume-card { background: var(--lavender); padding:15px; border-radius:10px; text-align:center; box-shadow:0 0 8px rgba(0,0,0,0.1); color:var(--charcoal); }
+    .costume-card img { width:100%; height:180px; object-fit:cover; border-radius:10px; }
+    .button { background: var(--charcoal); color: var(--text-light); padding:8px 16px; border-radius:6px; text-decoration:none; display:inline-block; margin-top:10px; }
+    .button.disabled { background: #aaa; cursor:not-allowed; }
+    .status { font-weight:bold; margin-top:5px; }
+    .status.available { color: var(--green); }
+    .status.soon { color: var(--orange); }
+    .status.unavailable { color: var(--red); }
   </style>
 </head>
 <body>
-  <!-- Animated Hamburger -->
-  <div class="hamburger" id="hamburger">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-
-  <div class="sidebar" id="sidebar">
+  <div class="sidebar">
     <h3><?= htmlspecialchars($name) ?></h3>
     <a href="edit_borrower_profile.php">✏️ Edit Profile</a>
     <a href="#">📅 Joined <?= $joined_days ?> days ago</a>
-    <a href="#">📦 My Rentals</a>
-
-    <div class="card">
-      <h4>🕓 Recent Rentals</h4>
-      <?php if (empty($recent_rentals)): ?>
-        <p>No rentals yet.</p>
-      <?php else: foreach ($recent_rentals as $r): ?>
-        <p><b><?= htmlspecialchars($r['title']) ?></b> on <?= date('d M Y', strtotime($r['rented_at'])) ?></p>
-      <?php endforeach; endif; ?>
-    </div>
-    <div class="card">
-      <h4>🔁 Pending Returns</h4>
-      <?php if (empty($pending_returns)): ?>
-        <p>No pending returns.</p>
-      <?php else: foreach ($pending_returns as $p): ?>
-        <p><?= htmlspecialchars($p['title']) ?> → Return by <?= date('d M Y', strtotime($p['return_by'])) ?></p>
-      <?php endforeach; endif; ?>
-    </div>
-
     <a href="logout.php">🚪 Logout</a>
   </div>
 
   <div class="main">
     <h2>Welcome, <?= htmlspecialchars($name) ?> 👋</h2>
+
+    <h3>🎭 Costumes</h3>
     <div class="costume-grid">
-      <?php if (empty($costumes)): ?>
-        <p style="grid-column: 1/-1;">No costumes found!</p>
-      <?php else: foreach ($costumes as $c): ?>
+      <?php if(empty($costumes)): ?>
+        <p style="grid-column:1/-1;">No costumes found!</p>
+      <?php else: foreach($costumes as $c): 
+        $status = "";
+        if ($c['quantity'] >= 2) $status = "available";
+        elseif ($c['quantity'] == 1) $status = "soon";
+        else $status = "unavailable";
+      ?>
         <div class="costume-card">
           <img src="<?= htmlspecialchars($c['image']) ?>" alt="Costume">
           <h4><?= htmlspecialchars($c['title']) ?></h4>
           <p>₹<?= $c['price_per_day'] ?>/day | Size: <?= htmlspecialchars($c['size']) ?></p>
-          <p><?= htmlspecialchars($c['category']) ?></p>
-          <a href="rent_costume.php?id=<?= $c['id'] ?>" class="button">Rent Now</a>
+          <p>Quantity: <?= $c['quantity'] ?></p>
+          <p class="status <?= $status ?>">
+            <?php if($status=="available"): ?>Available
+            <?php elseif($status=="soon"): ?>Soon to be out of stock
+            <?php else: ?>Unavailable<?php endif; ?>
+          </p>
+          <?php if($c['quantity'] > 0): ?>
+            <a href="rent_costume.php?id=<?= $c['id'] ?>" class="button">Rent Now</a>
+          <?php else: ?>
+            <span class="button disabled">Rent Now</span>
+          <?php endif; ?>
         </div>
       <?php endforeach; endif; ?>
     </div>
+
+    <h3>📬 My Rental Requests</h3>
+    <?php if(empty($requests)): ?>
+      <p>No rental requests yet.</p>
+    <?php else: foreach($requests as $req): ?>
+      <div class="costume-card">
+        <h4><?= htmlspecialchars($req['costume_title']) ?></h4>
+        <p>Requested on <?= date('d M Y', strtotime($req['request_date'])) ?></p>
+        <p class="status <?= strtolower($req['status']) ?>"><?= $req['status'] ?></p>
+        <?php if($req['status']=='Accepted'): ?>
+          <a href="fake_payment.php?request_id=<?= $req['id'] ?>" class="button">Proceed to Payment</a>
+        <?php endif; ?>
+      </div>
+    <?php endforeach; endif; ?>
+
   </div>
-
-<script>
-  const hamburger = document.getElementById('hamburger');
-  const sidebar = document.getElementById('sidebar');
-
-  hamburger.addEventListener('click', () => {
-    sidebar.classList.toggle('active');
-    hamburger.classList.toggle('active');
-  });
-
-  document.addEventListener('click', (event) => {
-    if (sidebar.classList.contains('active') &&
-        !sidebar.contains(event.target) &&
-        !hamburger.contains(event.target)) {
-      sidebar.classList.remove('active');
-      hamburger.classList.remove('active');
-    }
-  });
-</script>
 </body>
 </html>
