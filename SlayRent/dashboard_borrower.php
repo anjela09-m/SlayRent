@@ -60,25 +60,59 @@ while ($row = $qres->fetch_assoc()) $requests[] = $row;
 * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 body { margin:0; background: var(--lavender); color: var(--charcoal); overflow-x: hidden; }
 
+/* Sidebar */
 .sidebar {
-  position: fixed; top:0; left:-260px; width:260px; height:100vh; background: var(--charcoal); color: var(--text-light);
-  padding: 30px 20px; transition: left 0.3s ease; z-index:1000; overflow-y: auto;
+  width: 270px; 
+  background-color: var(--charcoal); 
+  color: var(--text-light); 
+  padding: 25px; 
+  height: 100vh;
+  position: fixed; 
+  top: 0; 
+  left: -270px; 
+  transition: 0.3s; 
+  z-index: 1000; 
+  overflow-y: auto; 
 }
-.sidebar.active { left:0; }
+.sidebar.active { left: 0; }
 .sidebar h3 { margin-bottom:20px; font-size: 1.4em; }
 .sidebar a { color: var(--text-light); text-decoration:none; display:block; margin:15px 0; font-size: 0.95em; }
+
 .sidebar .rental-requests { margin-top:30px; }
 .sidebar .rental-requests h4 { margin-bottom:10px; }
 
-.main { margin-left:0; padding:30px 40px; background: var(--pale-silver); min-height:100vh; transition: margin-left 0.3s ease; }
-.main.shifted { margin-left:260px; }
+/* Overlay */
+.overlay { 
+  position: fixed; 
+  top: 0; left: 0; 
+  width: 100%; height: 100%; 
+  background: rgba(0,0,0,0.5); 
+  display: none; 
+  z-index: 999; 
+}
+.overlay.active { display: block; }
 
-.hamburger { position: fixed; top:20px; left:20px; z-index:1100; cursor:pointer; display:flex; flex-direction:column; gap:5px; }
-.hamburger div { width:30px; height:4px; background: var(--charcoal); border-radius:2px; }
+/* Main Content */
+.main-content { 
+  margin-left: 0; 
+  transition: 0.3s; 
+  padding: 30px 40px; 
+  background-color: var(--pale-silver); 
+  min-height: 100vh; 
+}
+.main-content.shifted { margin-left: 270px; }
 
-.overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.3); display:none; z-index:900; }
-.overlay.active { display:block; }
+/* Hamburger */
+.hamburger { 
+  font-size: 24px; 
+  background: none; 
+  border: none; 
+  color: var(--charcoal); 
+  cursor: pointer; 
+  margin-bottom: 15px; 
+}
 
+/* Costumes Grid */
 .costume-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:20px; }
 .costume-card { background: var(--lavender); padding:15px; border-radius:10px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.15); color: var(--charcoal); }
 .costume-card img { width:100%; height:180px; object-fit:cover; border-radius:10px; margin-bottom:10px; }
@@ -98,12 +132,7 @@ body { margin:0; background: var(--lavender); color: var(--charcoal); overflow-x
 </head>
 <body>
 
-<div class="hamburger" id="hamburger">
-  <div></div>
-  <div></div>
-  <div></div>
-</div>
-
+<!-- Sidebar -->
 <div class="sidebar" id="sidebar">
   <h3><?= htmlspecialchars($name) ?></h3>
   <a href="edit_borrower_profile.php">✏️ Edit Profile</a>
@@ -128,15 +157,19 @@ body { margin:0; background: var(--lavender); color: var(--charcoal); overflow-x
   <a href="logout.php">🚪 Logout</a>
 </div>
 
-<div class="overlay" id="overlay"></div>
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-<div class="main" id="main">
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
   <h2>Welcome, <?= htmlspecialchars($name) ?> 👋</h2>
   <h3>🎭 Costumes</h3>
   <div class="costume-grid">
     <?php if(empty($costumes)): ?>
       <p style="grid-column:1/-1;">No costumes found!</p>
     <?php else: foreach($costumes as $c):
+      // ✅ Availability logic now based ONLY on quantity
       $status = ($c['quantity'] >= 2) ? "available" : (($c['quantity']==1)?"soon":"unavailable");
     ?>
       <div class="costume-card">
@@ -158,24 +191,11 @@ body { margin:0; background: var(--lavender); color: var(--charcoal); overflow-x
 </div>
 
 <script>
-const hamburger = document.getElementById('hamburger');
-const sidebar = document.getElementById('sidebar');
-const main = document.getElementById('main');
-const overlay = document.getElementById('overlay');
-
-hamburger.addEventListener('click', () => {
-  sidebar.classList.add('active');
-  overlay.classList.add('active');
-  main.classList.add('shifted');
-  document.body.style.overflow = 'hidden'; // prevent main scrolling
-});
-
-overlay.addEventListener('click', () => {
-  sidebar.classList.remove('active');
-  overlay.classList.remove('active');
-  main.classList.remove('shifted');
-  document.body.style.overflow = 'auto'; // restore scrolling
-});
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('active');
+  document.getElementById('overlay').classList.toggle('active');
+  document.getElementById('mainContent').classList.toggle('shifted');
+}
 </script>
 
 </body>
