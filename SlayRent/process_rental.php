@@ -3,40 +3,60 @@ session_start();
 include 'includes/config.php';
 
 // Check if borrower is logged in
-if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'borrower') {
-    echo "You must be logged in as a borrower to request a rental.";
-    exit();
-}
-// Get costume_id from POST
-if (!isset($_POST['costume_id'])) {
-    echo "Invalid request.";
-    exit();
-}
-$borrower_id = $_SESSION['user_id'];   // ✅ Correct now
-$costume_id  = intval($_POST['costume_id']);
-
-
-// 🔹 Fetch lender_id from costumes table
-$stmt = $conn->prepare("SELECT lender_id FROM costumes WHERE id = ?");
-$stmt->bind_param("i", $costume_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows == 0) {
-    echo "Costume not found.";
+if (!isset($_SESSION['borrower_id'])) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "You must be logged in as a borrower."
+    ]);
     exit();
 }
 
-$row = $result->fetch_assoc();
-$lender_id = $row['lender_id'];
+$borrower_id = $_SESSION['borrower_id'];
 
-// 🔹 Insert rental request
-$stmt = $conn->prepare("INSERT INTO rental_requests (costume_id, borrower_id, lender_id, status) VALUES (?, ?, ?, 'pending')");
-$stmt->bind_param("iii", $costume_id, $borrower_id, $lender_id);
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['costume_id'])) {
+    $costume_id = intval($_POST['costume_id']);
 
-if ($stmt->execute()) {
-    echo "Rental request sent successfully!";
+    // ✅ Get lender_id of this costume
+    $sql = "SELECT lender_id FROM costumes WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $costume_id);
+    $stmt->execute();
+    $stmt->bind_result($lender_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if (!$lender_id) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "This costume has no lender assigned."
+        ]);
+        exit();
+    }
+
+    // ✅ Insert into rental_requests with lender_id
+    $sql = "INSERT INTO rental_requests (lender_id, borrower_id, costume_id, status) VALUES (?, ?, ?, 'pending')";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iii", $lender_id, $borrower_id, $costume_id);
+
+    if ($stmt->execute()) {
+        echo json_encode([
+            "status" => "success",
+            "message" => "Rental Request Sent!"
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Something went wrong. Please try again."
+        ]);
+    }
+
+    $stmt->close();
 } else {
-    echo "Error: " . $stmt->error;
+    echo json_encode([
+        "status" => "error",
+        "message" => "Invalid Request! No costume selected."
+    ]);
 }
+
+$conn->close();
 ?>
