@@ -77,22 +77,39 @@ $costume = $result->fetch_assoc();
         button:hover {
             background: #c46e9d;
         }
+        .description {
+            margin: 15px 0;
+            font-size: 15px;
+            color: #555;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
     <div class="rent-box">
         <h2>Rent: <?php echo $costume['title']; ?></h2>
-       <img src="<?= htmlspecialchars($costume['image']) ?>" alt="Costume" class="costume-img">
+        <img src="<?= htmlspecialchars($costume['image']) ?>" alt="Costume" class="costume-img">
 
         <p><strong>Price per day:</strong> ₹<?php echo $costume['price_per_day']; ?></p>
 
+        <!-- Costume description -->
+        <div class="description">
+            <strong>Description:</strong><br>
+            <?= nl2br(htmlspecialchars($costume['description'])) ?>
+        </div>
+
         <form method="POST" action="process_rental.php">
             <input type="hidden" name="costume_id" value="<?php echo $costume['id']; ?>">
+
             <label>Start Date:</label>
             <input type="date" id="start_date" name="start_date" required>
 
             <label>End Date:</label>
             <input type="date" id="end_date" name="end_date" required>
+
+            <!-- Quantity Option -->
+            <label>Quantity:</label>
+            <input type="number" id="quantity" name="quantity" value="1" min="1" required>
 
             <div class="total-price">
                 Total Price: ₹<span id="total">0</span>
@@ -106,15 +123,28 @@ $costume = $result->fetch_assoc();
         const startDate = document.getElementById('start_date');
         const endDate = document.getElementById('end_date');
         const totalSpan = document.getElementById('total');
+        const quantityInput = document.getElementById('quantity');
         const pricePerDay = <?php echo $costume['price_per_day']; ?>;
 
         function calculateTotal() {
             if (startDate.value && endDate.value) {
                 let start = new Date(startDate.value);
                 let end = new Date(endDate.value);
+                let qty = parseInt(quantityInput.value) || 1;
+
                 if (end >= start) {
-                    let days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1; 
-                    let total = days * pricePerDay;
+                    let days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+                    let basePrice = pricePerDay * qty;
+                    let total = 0;
+
+                    if (days <= 3) {
+                        total = basePrice; // flat for up to 3 days
+                    } else {
+                        let extraDays = days - 3;
+                        total = basePrice  + 10;
+                    }
+
                     totalSpan.textContent = total;
                 } else {
                     totalSpan.textContent = "0";
@@ -124,6 +154,7 @@ $costume = $result->fetch_assoc();
 
         startDate.addEventListener('change', calculateTotal);
         endDate.addEventListener('change', calculateTotal);
+        quantityInput.addEventListener('input', calculateTotal);
     </script>
 </body>
 </html>
