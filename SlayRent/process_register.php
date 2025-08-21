@@ -47,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   } elseif ($type === 'lender') {
     $name = $_POST['name'];
     $shop_name = $_POST['shop_name'];
-    $shop_id = $_POST['shop_id'];
     $contact = $_POST['contact'];
     $auth_id = $_POST['auth_id'];
 
@@ -55,8 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       die("Invalid Aadhar number. Must be 12 digits.");
     }
 
-    $stmt = $conn->prepare("INSERT INTO lenders (name, shop_name, shop_id, contact, email, password, auth_id, slayrent_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssssss", $name, $shop_name, $shop_id, $contact, $email, $password, $auth_id, $slayrent_id);
+    $stmt = $conn->prepare("INSERT INTO lenders (name, shop_name, contact, email, password, auth_id, slayrent_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssss", $name, $shop_name, $contact, $email, $password, $auth_id, $slayrent_id);
     $stmt->execute();
     $stmt->close();
 
@@ -91,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         animation: fadeSlideIn 1s ease;
       }
       .success-box h3 {
-        color:rgb(243, 98, 190);
+        color:rgb(156, 31, 110);
         font-size: 26px;
         margin-bottom: 15px;
       }
