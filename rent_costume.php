@@ -2,6 +2,12 @@
 session_start();
 include 'includes/config.php';
 
+// ✅ Check if borrower is logged in
+if (!isset($_SESSION['borrower_id'])) {
+    echo "<script>alert('⚠️ Please log in as a borrower to rent a costume.'); window.location.href='login.php';</script>";
+    exit();
+}
+
 // Costume ID from URL
 if (!isset($_GET['id'])) {
     die("Costume not found!");
@@ -95,23 +101,26 @@ $stmt->close();
                 let start = new Date(startDate.value);
                 let end = new Date(endDate.value);
                 let qty = parseInt(quantityInput.value) || 1;
-if (end >= start) {
-    let days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-    let basePrice = pricePerDay * qty; // price of product * quantity
-    let total = 0;
+                if (end >= start) {
+                    let days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-    if (days <= 3) {
-        total = basePrice; // normal multiplication for first 3 days
-    } else {
-        total = basePrice + ((days - 3) * 10); // after 3rd day add 10/day
-    }
+                    let basePrice = pricePerDay * qty;
+                    let total = 0;
 
-    totalSpan.textContent = total;
-} else {
-    totalSpan.textContent = "0";
-}
-            }}
+                    if (days <= 3) {
+                        total = basePrice;
+                    } else {
+                        total = basePrice + ((days - 3) * 10);
+                    }
+
+                    totalSpan.textContent = total;
+                } else {
+                    totalSpan.textContent = "0";
+                }
+            }
+        }
+
         startDate.addEventListener('change', calculateTotal);
         endDate.addEventListener('change', calculateTotal);
         quantityInput.addEventListener('input', calculateTotal);
