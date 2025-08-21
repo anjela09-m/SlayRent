@@ -2,7 +2,7 @@
 session_start();
 include 'includes/config.php';
 
-// Check if borrower is logged in
+// ✅ Check if borrower is logged in
 if (!isset($_SESSION['borrower_id'])) {
     echo json_encode([
         "status" => "error",
@@ -34,7 +34,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['costume_id'])) {
     }
 
     // ✅ Insert into rental_requests with lender_id
-    $sql = "INSERT INTO rental_requests (lender_id, borrower_id, costume_id, status) VALUES (?, ?, ?, 'pending')";
+    $sql = "INSERT INTO rental_requests (lender_id, borrower_id, costume_id, status) 
+            VALUES (?, ?, ?, 'pending')";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("iii", $lender_id, $borrower_id, $costume_id);
 
