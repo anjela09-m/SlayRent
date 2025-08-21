@@ -1,9 +1,8 @@
 <?php
 session_start();
+include 'includes/config.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
-include 'includes/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $email = trim($_POST['email']);
@@ -39,23 +38,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
-  // ✅ Borrower Login
-  $stmt = $conn->prepare("SELECT * FROM borrowers WHERE email = ?");
-  $stmt->bind_param("s", $email);
-  $stmt->execute();
-  $res = $stmt->get_result();
+// ✅ Borrower Login
+$stmt = $conn->prepare("SELECT * FROM borrowers WHERE email = ?");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$res = $stmt->get_result();
 
-  if ($res->num_rows === 1) {
-    $user = $res->fetch_assoc();
-    if (password_verify($password, $user['password'])) {
-      $_SESSION['user_type'] = 'borrower';
-      $_SESSION['user_id'] = $user['id'];
-      $_SESSION['slayrent_id'] = $user['slayrent_id'];
-      $_SESSION['name'] = $user['name']; 
-      header("Location: dashboard_borrower.php");
-      exit();
-    }
+if ($res->num_rows === 1) {
+  $user = $res->fetch_assoc();
+  if (password_verify($password, $user['password'])) {
+    $_SESSION['user_type'] = 'borrower';
+    $_SESSION['user_id'] = $user['id'];   
+    $_SESSION['borrower_id'] = $user['id'];   
+    $_SESSION['slayrent_id'] = $user['slayrent_id'];
+    $_SESSION['name'] = $user['name']; 
+
+    header("Location: dashboard_borrower.php");
+    exit();
   }
+}
+
 
   // ❌ Invalid Login
   echo "❌ Invalid email or password.";
