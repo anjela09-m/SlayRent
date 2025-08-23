@@ -114,18 +114,75 @@ body { margin:0; background: var(--lavender); color: var(--charcoal); overflow-x
 }
 
 /* Costumes Grid */
-.costume-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:20px; }
-.costume-card { background: var(--lavender); padding:15px; border-radius:10px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.15); color: var(--charcoal); }
-.costume-card img { width:100%; height:180px; object-fit:cover; border-radius:10px; margin-bottom:10px; }
-.button { background: var(--charcoal); color: var(--text-light); padding:8px 16px; border-radius:6px; text-decoration:none; display:inline-block; margin-top:10px; font-size:0.9em; }
-.button.disabled { background: #aaa; cursor:not-allowed; }
+.costume-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); 
+  gap: 20px; 
+  align-items: stretch; 
+}
+
+.costume-card { 
+  background: var(--lavender); 
+  padding: 15px; 
+  border-radius: 10px; 
+  text-align: center; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
+  color: var(--charcoal); 
+  height: 410px;                 /* Fixed medium height */
+  display: flex;                 
+  flex-direction: column;        
+}
+
+.costume-card .card-content {
+  flex-grow: 1;                   /* Take all available space */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.costume-card .button-container {
+  margin-top: auto;               /* Push button to bottom */
+}
+
+.costume-card img { 
+  width: 100%; 
+  height: 150px; 
+  object-fit: cover; 
+  border-radius: 10px; 
+  margin-bottom: 8px; 
+}
+
+.costume-card h4 { 
+  font-size: 1em; 
+  margin: 6px 0; 
+  line-height: 1.2em; 
+  max-height: 2.4em;             /* ✅ Restrict to 2 lines */
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2;         /* ✅ Allow max 2 lines */
+  -webkit-box-orient: vertical; 
+}
+
+.button { 
+  background: var(--charcoal); 
+  color: var(--text-light); 
+  padding: 8px 12px; 
+  border-radius: 6px; 
+  text-decoration: none; 
+  display: inline-block; 
+  margin-top: 6px; 
+  font-size: 0.9em; 
+}
+.button.disabled { background: #aaa; cursor: not-allowed; }
+
 .status { font-weight:bold; margin-top:5px; font-size:0.85em; }
 .status.available { color: var(--green); }
 .status.soon { color: var(--orange); }
 .status.unavailable { color: var(--red); }
 
 /* Rental requests inside sidebar */
-.sidebar .costume-card { background: #2b2b2b; padding:10px; margin-bottom:10px; border-radius:8px; box-shadow:0 1px 5px rgba(0,0,0,0.2); }
+.sidebar .costume-card { background: #2b2b2b; padding:10px; margin-bottom:10px; border-radius:8px; box-shadow:0 1px 5px rgba(0,0,0,0.2); height:auto; }
 .sidebar .costume-card h5 { margin:5px 0; font-size:0.95em; color: var(--text-light); }
 .sidebar .costume-card p { font-size:0.8em; color: #ddd; margin:2px 0; }
 .sidebar .costume-card .button { padding:5px 10px; font-size:0.8em; margin-top:5px; }
@@ -170,7 +227,6 @@ body { margin:0; background: var(--lavender); color: var(--charcoal); overflow-x
     <?php if(empty($costumes)): ?>
       <p style="grid-column:1/-1;">No costumes found!</p>
     <?php else: foreach($costumes as $c):
-      // ✅ Availability logic now based ONLY on quantity
       $status = ($c['quantity'] >= 2) ? "available" : (($c['quantity']==1)?"soon":"unavailable");
     ?>
       <div class="costume-card">
