@@ -4,3 +4,7 @@ ini_set('display_errors', 1);
 
 echo password_hash("slayyy123", PASSWORD_DEFAULT);
 ?>
+
+/* 
+trait_exists
+*/
