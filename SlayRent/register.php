@@ -1,4 +1,3 @@
-sscanf
 <!DOCTYPE html>
 <html>
 <head>
