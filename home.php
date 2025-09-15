@@ -1,9 +1,18 @@
-<?php 
-session_start();
-include 'templates/header.php'; ?>
+<?php include 'templates/header.php'; ?>
 
 <section class="hero">
-  <div class="hero-content">
+  <!-- HTML5 Background Video with Fallback -->
+  <video autoplay muted loop playsinline class="video-background" poster="assets/images/banner1.jpg">
+    <source src="assets/Video/slayrent.mp4.mp4" type="video/mp4">
+    <!-- Fallback image if video cannot play -->
+    <img src="assets/images/banner1.jpg" alt="SlayRent Banner" style="width:100%;height:100%;object-fit:cover;">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Overlay for readability -->
+  <div class="overlay"></div>
+
+   <div class="hero-content">
     <h1>Welcome to SlayRent</h1>
     <p>Find the perfect costume for every fest — Onam, Christmas, Cultural and Halloween!</p>
   </div>
@@ -178,6 +187,21 @@ include 'templates/header.php'; ?>
   .step-card p {
     font-size: 15px;
     color: #555;
+  }
+
+  .video-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    pointer-events: none;
+    min-width: 100vw;
+    min-height: 100vh;
+    background: #000;
   }
 </style>
 
@@ -444,6 +468,21 @@ function showSteps(type) {
   .step-card p {
     font-size: 15px;
     color: #555;
+  }
+
+  .video-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    pointer-events: none;
+    min-width: 100vw;
+    min-height: 100vh;
+    background: #000;
   }
 </style>
 
