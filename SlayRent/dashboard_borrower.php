@@ -72,256 +72,406 @@ $keyId = 'rzp_test_RDRydETJkRioj4';
 <head>
 <meta charset="UTF-8">
 <title>Borrower Dashboard | SlayRent</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
-/* --- Styles with Fiery Pink Palette --- */
+/* --- Custom Color Palette & Fonts --- */
 :root {
-  --primary: #F0386B;
-  --accent: #FF5376;
-  --light: #F8C0C8;   /* text color */
-  --soft: #E2C290;    /* background area */
-  --dark: #6B2D5C;    /* card background */
-  --text-light: #F8C0C8;
+  --cream: #FBDB93;
+  --coral: #BE5B50;
+  --burgundy: #8A2D3B;
+  --dark-burgundy: #641B2E;
+  --white: #ffffff;
+  --light-gray: #f8f8f8;
   --green: #4caf50;
   --red: #ff4d4d;
   --orange: #ff9800;
   --blue: #007bff;
 }
 
-* {
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+* { 
+  box-sizing: border-box; 
+  font-family: 'Candara', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
 }
 
-body {
-  margin: 0;
-  background: var(--soft);   /* background area = E2C290 */
-  color: var(--light);       /* text = F8C0C8 */
-  overflow-x: hidden;
+body { 
+  margin: 0; 
+  background: var(--cream); 
+  color: var(--burgundy); 
+  overflow-x: hidden; 
+}
+
+/* Headings use Times New Roman */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Times New Roman', serif;
+  color: var(--dark-burgundy);
 }
 
 /* Sidebar */
-.sidebar {
-  width: 320px;
-  background-color: var(--dark);
-  color: var(--text-light);
-  padding: 25px;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: -320px;
-  transition: 0.28s;
-  z-index: 1000;
-  overflow-y: auto;
+.sidebar { 
+  width: 320px; 
+  background-color: var(--dark-burgundy); 
+  color: var(--cream); 
+  padding: 25px; 
+  height: 100vh; 
+  position: fixed; 
+  top: 0; 
+  left: -320px; 
+  transition: 0.28s; 
+  z-index: 1000; 
+  overflow-y: auto; 
 }
-.sidebar.active {
-  left: 0;
+.sidebar.active { left: 0; }
+.sidebar h3 { 
+  margin-bottom: 20px; 
+  font-size: 1.4em; 
+  font-family: 'Times New Roman', serif;
+  color: var(--cream);
 }
-.sidebar h3 {
-  margin-bottom: 20px;
-  font-size: 1.4em;
+.sidebar a { 
+  color: var(--cream); 
+  text-decoration: none; 
+  display: block; 
+  margin: 12px 0; 
+  font-size: 0.95em; 
+  transition: color 0.3s ease;
 }
-.sidebar a {
-  color: var(--text-light);
-  text-decoration: none;
-  display: block;
-  margin: 12px 0;
-  font-size: 0.95em;
+.sidebar a:hover {
+  color: var(--coral);
 }
-.sidebar .rental-requests {
-  margin-top: 20px;
+.sidebar .rental-requests { margin-top: 20px; }
+.sidebar .rental-requests h4 { 
+  margin-bottom: 10px; 
+  color: var(--cream);
+  font-family: 'Times New Roman', serif;
 }
-.sidebar .rental-requests h4 {
-  margin-bottom: 10px;
+.sidebar .costume-card { 
+  background: var(--cream); 
+  padding: 10px; 
+  margin-bottom: 10px; 
+  border-radius: 8px; 
+  box-shadow: 0 2px 8px rgba(100, 27, 46, 0.2); 
 }
-.sidebar .costume-card {
-  background: var(--accent);
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+.sidebar .costume-card h5 { 
+  margin: 5px 0; 
+  font-size: 0.95em; 
+  color: var(--burgundy); 
+  font-weight: 600; 
+  font-family: 'Times New Roman', serif;
 }
-.sidebar .costume-card h5 {
-  margin: 5px 0;
-  font-size: 0.95em;
-  color: var(--text-light);
+.sidebar .costume-card p { 
+  font-size: 0.82em; 
+  color: var(--burgundy); 
+  margin: 3px 0; 
 }
-.sidebar .costume-card p {
-  font-size: 0.82em;
-  color: var(--light);
-  margin: 3px 0;
+.sidebar .costume-card .button { 
+  padding: 6px 10px; 
+  font-size: 0.84em; 
+  margin-top: 6px; 
+  display: block; 
+  text-align: center; 
+  background: var(--coral); 
+  border: none; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  color: var(--white); 
+  font-weight: 500; 
+  transition: background 0.3s ease;
 }
-.sidebar .costume-card .button {
-  padding: 6px 10px;
-  font-size: 0.84em;
-  margin-top: 6px;
-  display: block;
-  text-align: center;
-  background: var(--primary);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #fff;
+.sidebar .costume-card .button:hover {
+  background: var(--burgundy);
 }
-.sidebar .costume-card .button.disabled {
-  background: #aaa;
-  cursor: not-allowed;
+.sidebar .costume-card .button.disabled { 
+  background: #aaa; 
+  cursor: not-allowed; 
 }
-.sidebar .completed-log {
-  background: var(--soft);
-  color: var(--dark);
-  padding: 6px 10px;
-  margin: 6px 0;
-  border-radius: 6px;
-  font-size: 0.82em;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.sidebar .costume-card .button.disabled:hover { 
+  background: #aaa; 
 }
-.sidebar .completed-log span.status {
-  font-weight: bold;
-  color: var(--green);
+.sidebar .completed-log { 
+  background: var(--white); 
+  color: var(--burgundy); 
+  padding: 6px 10px; 
+  margin: 6px 0; 
+  border-radius: 6px; 
+  font-size: 0.82em; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  box-shadow: 0 1px 3px rgba(138, 45, 59, 0.1); 
+}
+.sidebar .completed-log span.status { 
+  font-weight: bold; 
+  color: var(--green); 
 }
 
 /* Overlay */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.45);
-  display: none;
-  z-index: 999;
+.overlay { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(100, 27, 46, 0.5); 
+  display: none; 
+  z-index: 999; 
 }
-.overlay.active {
-  display: block;
-}
+.overlay.active { display: block; }
 
 /* Main content */
-.main-content {
-  margin-left: 0;
-  transition: 0.28s;
-  padding: 30px 40px;
-  background-color: var(--soft); /* bg = E2C290 */
-  min-height: 100vh;
-  color: var(--light);           /* text = F8C0C8 */
+.main-content { 
+  margin-left: 0; 
+  transition: 0.28s; 
+  padding: 30px 40px; 
+  background-color: var(--cream); 
+  min-height: 100vh; 
+  color: var(--burgundy); 
 }
-.main-content.shifted {
-  margin-left: 320px;
-}
+.main-content.shifted { margin-left: 320px; }
 
 /* Hamburger */
-.hamburger {
-  font-size: 24px;
-  background: none;
-  border: none;
-  color: var(--light);
-  cursor: pointer;
-  margin-bottom: 15px;
+.hamburger { 
+  font-size: 24px; 
+  background: none; 
+  border: none; 
+  color: var(--burgundy); 
+  cursor: pointer; 
+  margin-bottom: 15px; 
+  transition: color 0.3s ease;
+}
+.hamburger:hover {
+  color: var(--coral);
+}
+
+/* Search Bar */
+.search-container { 
+  position: relative; 
+  margin: 20px 0 30px 0; 
+}
+.search-bar { 
+  width: 100%; 
+  padding: 15px 50px 15px 20px; 
+  font-size: 16px; 
+  border: 2px solid var(--coral); 
+  border-radius: 25px; 
+  background: var(--white); 
+  color: var(--burgundy); 
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: 'Candara', sans-serif;
+}
+.search-bar:focus { 
+  border-color: var(--burgundy); 
+  box-shadow: 0 0 15px rgba(138, 45, 59, 0.3); 
+}
+.search-bar::placeholder { 
+  color: var(--burgundy); 
+  opacity: 0.6; 
+}
+.search-icon { 
+  position: absolute; 
+  right: 18px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  font-size: 18px; 
+  color: var(--coral); 
+  pointer-events: none; 
+}
+.clear-search { 
+  position: absolute; 
+  right: 50px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  background: none; 
+  border: none; 
+  color: var(--burgundy); 
+  font-size: 18px; 
+  cursor: pointer; 
+  display: none; 
+  transition: color 0.3s ease;
+}
+.clear-search:hover {
+  color: var(--coral);
 }
 
 /* Costume grid + cards */
-.costume-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  align-items: stretch;
+.costume-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+  gap: 20px; 
+  align-items: stretch; 
 }
-.costume-card {
-  background: var(--dark);   /* cards = 6B2D5C */
-  padding: 15px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  color: var(--light);      /* text = F8C0C8 */
-  height: 410px;
-  display: flex;
-  flex-direction: column;
+.costume-card { 
+  background: var(--white); 
+  padding: 15px; 
+  border-radius: 10px; 
+  text-align: center; 
+  box-shadow: 0 4px 15px rgba(138, 45, 59, 0.15); 
+  color: var(--burgundy); 
+  height: 420px; 
+  display: flex; 
+  flex-direction: column; 
+  border: 1px solid var(--cream); 
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.costume-card .card-content {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+.costume-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(138, 45, 59, 0.2);
 }
-.costume-card .button-container {
-  margin-top: auto;
+.costume-card.hidden { display: none; }
+.costume-card .card-content { 
+  flex-grow: 1; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: flex-start; 
 }
-.costume-card img {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: 8px;
+.costume-card .button-container { margin-top: 10px; }
+.costume-card img { 
+  width: 100%; 
+  height: 150px; 
+  object-fit: cover; 
+  border-radius: 8px; 
+  margin-bottom: 8px; 
+  border: 2px solid var(--cream);
 }
-.costume-card h4 {
-  font-size: 1em;
-  margin: 6px 0;
-  line-height: 1.2em;
-  max-height: 2.4em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.costume-card h4 { 
+  font-size: 1em; 
+  margin: 6px 0; 
+  line-height: 1.2em; 
+  max-height: 2.4em; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2; 
+  -webkit-box-orient: vertical; 
+  color: var(--burgundy); 
+  font-weight: 600; 
+  font-family: 'Times New Roman', serif;
 }
 
 /* Buttons */
-.button {
-  background: var(--primary);
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  display: inline-block;
-  margin-top: 6px;
-  font-size: 0.9em;
-  cursor: pointer;
-  border: none;
+.button { 
+  background: var(--coral); 
+  color: var(--white); 
+  padding: 8px 16px; 
+  border-radius: 6px; 
+  text-decoration: none; 
+  display: inline-block; 
+  margin-top: 6px; 
+  font-size: 0.85em; 
+  cursor: pointer; 
+  border: none; 
+  transition: all 0.3s ease; 
+  font-weight: 500; 
+  font-family: 'Candara', sans-serif;
 }
-.button.disabled {
-  background: #aaa;
-  cursor: not-allowed;
+.button:hover { 
+  background: var(--burgundy); 
+  transform: translateY(-1px);
+}
+.button.disabled { 
+  background: #aaa; 
+  cursor: not-allowed; 
+}
+.button.disabled:hover { 
+  background: #aaa; 
+  transform: none;
 }
 
 /* Status colors */
-.status {
-  font-weight: bold;
-  margin-top: 5px;
-  font-size: 0.85em;
+.status { 
+  font-weight: bold; 
+  margin-top: 5px; 
+  font-size: 0.85em; 
 }
-.status.pending {
-  color: var(--orange);
+.status.pending { color: var(--orange); }
+.status.accepted { color: var(--green); }
+.status.rejected { color: var(--red); }
+.status.paid { color: var(--blue); }
+.status.dispatched { color: var(--coral); }
+.status.delivered { color: #2ecc71; }
+.status.return_requested { color: #e67e22; }
+.status.returned { color: #d35400; }
+.status.completed { color: var(--green); }
+
+/* Payment Success Modal */
+.modal { 
+  display: none; 
+  position: fixed; 
+  z-index: 1001; 
+  left: 0; 
+  top: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(100, 27, 46, 0.7); 
+  align-items: center; 
+  justify-content: center; 
 }
-.status.accepted {
-  color: var(--green);
+.modal-content { 
+  background: var(--white); 
+  padding: 25px; 
+  border-radius: 12px; 
+  text-align: center; 
+  box-shadow: 0px 6px 15px rgba(0,0,0,0.2); 
+  max-width: 350px; 
+  border: 2px solid var(--cream);
 }
-.status.rejected {
-  color: var(--red);
+.modal-content h3 {
+  color: var(--burgundy);
+  font-family: 'Times New Roman', serif;
 }
-.status.paid {
-  color: var(--blue);
+.modal-content p {
+  color: var(--burgundy);
+  font-family: 'Candara', sans-serif;
 }
-.status.dispatched {
-  color: var(--accent);
+.modal-content button { 
+  margin-top: 15px; 
+  padding: 10px 18px; 
+  background: var(--coral); 
+  color: var(--white); 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  font-family: 'Candara', sans-serif;
+  transition: background 0.3s ease;
 }
-.status.delivered {
-  color: #2ecc71;
+.modal-content button:hover {
+  background: var(--burgundy);
 }
-.status.return_requested {
-  color: #e67e22;
+
+/* Search results info */
+.search-info { 
+  margin: 15px 0; 
+  font-size: 14px; 
+  color: var(--coral); 
+  font-weight: 500; 
+  display: none; 
+  font-family: 'Candara', sans-serif;
 }
-.status.returned {
-  color: #d35400;
+
+/* Welcome message styling */
+.main-content h2 {
+  color: var(--dark-burgundy);
+  font-family: 'Times New Roman', serif;
+  font-size: 1.8em;
+  margin-bottom: 20px;
 }
-.status.completed {
-  color: var(--green);
+
+.main-content h3 {
+  color: var(--burgundy);
+  font-family: 'Times New Roman', serif;
+  font-size: 1.4em;
+  margin-bottom: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-content { padding: 20px; }
+  .costume-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+  .costume-card { height: 380px; }
 }
 </style>
-
 </head>
 <body>
 
@@ -333,58 +483,40 @@ body {
 
   <div class="rental-requests">
     <h4>📬 My Rental Requests</h4>
-
     <?php
     $activeRequests = [];
     $completedRequests = [];
-
     foreach($requests as $req){
-        // ensure status is lower-case string to match CSS classes
-        $req['status'] = $req['status'] ?? 'pending'; // FIX: default if NULL
-        $req['status'] = strtolower($req['status']);
+        $req['status'] = strtolower($req['status'] ?? 'pending');
         $req['payment_status'] = strtolower($req['payment_status'] ?? '');
         if($req['status'] === 'completed'){
             $completedRequests[] = $req;
-        } else {
-            $activeRequests[] = $req;
-        }
+        } else { $activeRequests[] = $req; }
     }
-
-    if(empty($activeRequests)){
-        echo "<p>No active rental requests.</p>";
-    }
-
+    if(empty($activeRequests)) echo "<p>No active rental requests.</p>";
     foreach($activeRequests as $req):
         $status = htmlspecialchars($req['status']);
-        $paymentStatus = htmlspecialchars($req['payment_status'] ?? '');
-        // NOTE: IDs used below: rental-<id> and status-<id> (consistent with JS)
+        $paymentStatus = htmlspecialchars($req['payment_status']);
     ?>
-        <div class="costume-card" id="rental-<?= $req['id'] ?>">
-            <h5><?= htmlspecialchars($req['costume_title']) ?></h5>
-            <p>Status: <span class="status <?= $status ?>" id="status-<?= $req['id'] ?>"><?= ucfirst($status) ?></span></p>
-            <p>Qty: <?= intval($req['quantity']) ?> | ₹<?= number_format($req['total_price'],2) ?></p>
+    <div class="costume-card" id="rental-<?= $req['id'] ?>">
+        <h5><?= htmlspecialchars($req['costume_title']) ?></h5>
+        <p>Status: <span class="status <?= $status ?>" id="status-<?= $req['id'] ?>"><?= ucfirst($status) ?></span></p>
+        <p>Qty: <?= intval($req['quantity']) ?> | ₹<?= number_format($req['total_price'],2) ?></p>
 
-            <?php if($status === 'accepted' && $paymentStatus !== 'paid'): ?>
-                <button class="button" onclick="payNow(<?= $req['id'] ?>, <?= $req['total_price'] ?>, '<?= addslashes($req['costume_title']) ?>')">💰 Pay Now</button>
-
-            <?php elseif($status === 'paid'): ?>
-                <span class="button disabled">✅ Paid (Waiting Dispatch)</span>
-
-            <?php elseif($status === 'dispatched'): ?>
-                <button class="button" onclick="updateStatus(<?= $req['id'] ?>,'delivered')">📦 Confirm Delivery</button>
-
-           <?php elseif($status === 'delivered'): ?>
-    <button class="button" onclick="updateStatus(<?= $req['id'] ?>,'returned')">🔄 Return Item</button>
-    
-<?php elseif($status === 'returned'): ?>
-    <span class="button disabled">📦 Returned (Lender Confirmed)</span>
-
-
-            <?php elseif($status === 'rejected'): ?>
-                <span class="button disabled">❌ Rejected</span>
-
-            <?php endif; ?>
-        </div>
+        <?php if($status === 'accepted' && $paymentStatus !== 'paid'): ?>
+            <button class="button" onclick="payNow(<?= $req['id'] ?>, <?= $req['total_price'] ?>, '<?= addslashes($req['costume_title']) ?>')">💰 Pay Now</button>
+        <?php elseif($status === 'paid'): ?>
+            <span class="button disabled">✅ Paid (Waiting Dispatch)</span>
+        <?php elseif($status === 'dispatched'): ?>
+            <button class="button" onclick="updateStatus(<?= $req['id'] ?>,'delivered')">📦 Confirm Delivery</button>
+        <?php elseif($status === 'delivered'): ?>
+            <button class="button" onclick="updateStatus(<?= $req['id'] ?>,'returned')">🔄 Return Item</button>
+        <?php elseif($status === 'returned'): ?>
+            <span class="button disabled">📦 Returned (Lender Confirmed)</span>
+        <?php elseif($status === 'rejected'): ?>
+            <span class="button disabled">❌ Rejected</span>
+        <?php endif; ?>
+    </div>
     <?php endforeach; ?>
 
     <?php if(!empty($completedRequests)): ?>
@@ -397,7 +529,6 @@ body {
         <?php endforeach; ?>
     <?php endif; ?>
   </div>
-
   <a href="logout.php">🚪 Logout</a>
 </div>
 
@@ -407,23 +538,30 @@ body {
 <div class="main-content" id="mainContent">
   <button class="hamburger" onclick="toggleSidebar()">☰</button>
   <h2>Welcome, <?= htmlspecialchars($name) ?> 👋</h2>
+  
+  <!-- Search Bar -->
+  <div class="search-container">
+    <input type="text" id="searchBar" class="search-bar" placeholder="Search costumes by keywords (onam, christmas, dance, theme, cultural, halloween, white, saree...)">
+    <button class="clear-search" id="clearSearch" onclick="clearSearch()">✕</button>
+    <span class="search-icon">🔍</span>
+  </div>
+  <div class="search-info" id="searchInfo"></div>
+  
   <h3>🎭 Costumes</h3>
 
-  <div class="costume-grid">
+  <div class="costume-grid" id="costumeGrid">
     <?php if(empty($costumes)): ?>
       <p style="grid-column:1/-1;">No costumes found!</p>
     <?php else: foreach($costumes as $c):
       $statusQty = ($c['quantity'] >= 2) ? "available" : (($c['quantity']==1)?"soon":"unavailable");
     ?>
-      <div class="costume-card">
+      <div class="costume-card" data-title="<?= htmlspecialchars(strtolower($c['title'])) ?>" data-description="<?= htmlspecialchars(strtolower($c['description'] ?? '')) ?>">
         <img src="<?= htmlspecialchars($c['image']) ?>" alt="Costume">
         <div class="card-content">
           <h4><?= htmlspecialchars($c['title']) ?></h4>
           <p>₹<?= htmlspecialchars($c['price_per_day']) ?>/day | Size: <?= htmlspecialchars($c['size']) ?></p>
           <p>Quantity: <?= intval($c['quantity']) ?></p>
-          <p class="status <?= $statusQty ?>">
-            <?= $statusQty=="available"?"Available":($statusQty=="soon"?"Soon":"Unavailable") ?>
-          </p>
+          <p class="status <?= $statusQty ?>"><?= $statusQty=="available"?"Available":($statusQty=="soon"?"Soon":"Unavailable") ?></p>
         </div>
         <div class="button-container">
           <?php if($c['quantity']>0): ?>
@@ -437,6 +575,15 @@ body {
   </div>
 </div>
 
+<!-- Payment Success Modal -->
+<div class="modal" id="paymentSuccessModal">
+    <div class="modal-content">
+        <h3>✅ Payment Successful!</h3>
+        <p>Your payment has been recorded successfully.</p>
+        <button onclick="closeModal()">Go to Dashboard</button>
+    </div>
+</div>
+
 <script>
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('active');
@@ -444,69 +591,121 @@ function toggleSidebar(){
   document.getElementById('mainContent').classList.toggle('shifted');
 }
 
-/*
-  updateStatus:
-  - POSTs to update_request_status.php which must return JSON:
-    { success: true, new_status: "dispatched" }
-  - On failure return { success: false, error: "..." }
-*/
-function updateStatus(rentalId, newStatus){
-    $.post('update_request_status.php',{id:rentalId,status:newStatus},function(res){
-        if(!res || !res.success){ 
-            alert(res && res.error ? res.error : "Unknown error"); 
-            return; 
-        }
+function closeModal(){ document.getElementById('paymentSuccessModal').style.display='none'; }
 
-        var ns = res.new_status;
-        // Update the status text + class
-        $('#status-'+rentalId)
-            .text(ns.charAt(0).toUpperCase() + ns.slice(1))
-            .attr('class','status ' + ns);
+// --- Search Functionality ---
+const searchKeywords = {
+  'onam': ['onam', 'kerala', 'traditional', 'south indian', 'festival'],
+  'christmas': ['christmas', 'xmas', 'santa', 'festive', 'winter', 'holiday'],
+  'dance': ['dance', 'dancing', 'performance', 'stage', 'classical', 'folk'],
+  'theme': ['theme', 'themed', 'party', 'costume party', 'fancy dress'],
+  'cultural': ['cultural', 'traditional', 'ethnic', 'folk', 'heritage'],
+  'halloween': ['halloween', 'scary', 'spooky', 'ghost', 'witch', 'vampire'],
+  'white': ['white', 'cream', 'ivory', 'off-white'],
+  'saree': ['saree', 'sari', 'traditional wear', 'indian wear', 'ethnic wear']
+};
 
-        var card = $('#rental-'+rentalId);
-        // remove any existing buttons
-        card.find('.button, .button.disabled').remove();
-
-        // Recreate UI according to new status
-        if(ns === 'paid'){
-            card.append('<span class="button disabled">✅ Paid (Waiting Dispatch)</span>');
-        }
-        else if(ns === 'dispatched'){
-            card.append('<button class="button" onclick="updateStatus('+rentalId+',\'delivered\')">📦 Confirm Delivery</button>');
-        }
-        else if(ns === 'delivered'){
-            card.append('<button class="button" onclick="updateStatus('+rentalId+',\'returned\')">🔄 Return Item</button>');
-        }
-        else if(ns === 'returned'){
-            card.append('<span class="button disabled">⏳ Waiting for Lender Confirmation</span>');
-        }
-        else if(ns === 'completed'){
-            card.replaceWith(
-                '<div class="completed-log" id="completed-'+rentalId+'">' +
-                    '<span>'+$('#status-'+rentalId).text()+'</span>' +
-                    '<span class="status completed">Completed</span>' +
-                '</div>'
-            );
-        }
-        else if(ns === 'rejected'){
-            card.append('<span class="button disabled">❌ Rejected</span>');
-        }
-
-    },'json').fail(function(xhr){
-        alert("❌ Server error: " + xhr.responseText);
+function searchCostumes() {
+  const searchTerm = document.getElementById('searchBar').value.toLowerCase().trim();
+  const costumes = document.querySelectorAll('.costume-card[data-title]');
+  const clearBtn = document.getElementById('clearSearch');
+  const searchInfo = document.getElementById('searchInfo');
+  
+  if (searchTerm === '') {
+    // Show all costumes
+    costumes.forEach(costume => {
+      costume.classList.remove('hidden');
     });
+    clearBtn.style.display = 'none';
+    searchInfo.style.display = 'none';
+    return;
+  }
+  
+  clearBtn.style.display = 'block';
+  let visibleCount = 0;
+  
+  costumes.forEach(costume => {
+    const title = costume.getAttribute('data-title');
+    const description = costume.getAttribute('data-description') || '';
+    let isMatch = false;
+    
+    // Direct text match
+    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+      isMatch = true;
+    }
+    
+    // Keyword matching
+    if (!isMatch) {
+      for (let keyword in searchKeywords) {
+        if (searchTerm.includes(keyword) || keyword.includes(searchTerm)) {
+          const relatedTerms = searchKeywords[keyword];
+          for (let term of relatedTerms) {
+            if (title.includes(term) || description.includes(term)) {
+              isMatch = true;
+              break;
+            }
+          }
+          if (isMatch) break;
+        }
+      }
+    }
+    
+    // Additional fuzzy matching for common terms
+    if (!isMatch) {
+      const searchWords = searchTerm.split(' ');
+      for (let word of searchWords) {
+        if (word.length > 2 && (title.includes(word) || description.includes(word))) {
+          isMatch = true;
+          break;
+        }
+      }
+    }
+    
+    if (isMatch) {
+      costume.classList.remove('hidden');
+      visibleCount++;
+    } else {
+      costume.classList.add('hidden');
+    }
+  });
+  
+  // Show search results info
+  searchInfo.style.display = 'block';
+  searchInfo.textContent = `Found ${visibleCount} costume${visibleCount !== 1 ? 's' : ''} matching "${searchTerm}"`;
 }
 
-/*
-  payNow:
-  - Calls create_order.php (POST JSON { request_id })
-    expected JSON response: { order_id: "...", amount: 12300 }  // amount in paise
-  - Razorpay handler calls verify_payment.php (POST) with payment details and request_id
-    verify_payment.php should validate & create payment row, and update rental_requests.status -> 'paid'
-    verify_payment.php expected response: { success:true, new_status:"paid", amount: 390.00 }
-*/
+function clearSearch() {
+  document.getElementById('searchBar').value = '';
+  searchCostumes();
+}
+
+// Add event listeners for search
+document.getElementById('searchBar').addEventListener('input', searchCostumes);
+document.getElementById('searchBar').addEventListener('keyup', function(e) {
+  if (e.key === 'Escape') {
+    clearSearch();
+  }
+});
+
+// --- Update Request Status ---
+function updateStatus(rentalId, newStatus){
+    $.post('update_request_status.php',{id:rentalId,status:newStatus},function(res){
+        if(!res || !res.success){ alert(res && res.error ? res.error : "Unknown error"); return; }
+        var ns = res.new_status;
+        $('#status-'+rentalId).text(ns.charAt(0).toUpperCase()+ns.slice(1)).attr('class','status '+ns);
+        var card = $('#rental-'+rentalId);
+        card.find('.button, .button.disabled').remove();
+        if(ns==='paid') card.append('<span class="button disabled">✅ Paid (Waiting Dispatch)</span>');
+        else if(ns==='dispatched') card.append('<button class="button" onclick="updateStatus('+rentalId+',\'delivered\')">📦 Confirm Delivery</button>');
+        else if(ns==='delivered') card.append('<button class="button" onclick="updateStatus('+rentalId+',\'returned\')">🔄 Return Item</button>');
+        else if(ns==='returned') card.append('<span class="button disabled">⏳ Waiting for Lender Confirmation</span>');
+        else if(ns==='completed') card.replaceWith('<div class="completed-log" id="completed-'+rentalId+'"><span>'+$('#status-'+rentalId).text()+'</span><span class="status completed">Completed</span></div>');
+        else if(ns==='rejected') card.append('<span class="button disabled">❌ Rejected</span>');
+    },'json').fail(function(xhr){ alert("❌ Server error: " + xhr.responseText); });
+}
+
+// --- Pay Now with Razorpay ---
 function payNow(requestId, amount, title) {
-    // call create_order.php to get order id + amount (in paise)
     fetch('create_order.php', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
@@ -515,45 +714,28 @@ function payNow(requestId, amount, title) {
     .then(res => res.json())
     .then(data => {
         if(!data || data.error){ alert(data ? data.error : 'Create order failed'); return; }
-
         const options = {
             "key": "<?php echo $keyId ?>",
-            "amount": data.amount, // in paise from server
+            "amount": data.amount,
             "currency": "INR",
             "name": "SlayRent",
             "description": title,
             "order_id": data.order_id,
             "handler": function (response){
-                // Send verified payment to backend
-                $.post('verify_payment.php', {
+                $.post('verify_payment.php',{
                     razorpay_payment_id: response.razorpay_payment_id,
                     razorpay_order_id: response.razorpay_order_id,
                     razorpay_signature: response.razorpay_signature,
                     request_id: requestId
                 }, function(res){
-                    if(!res){ alert("Invalid server response"); return; }
-                    if(res.success){
-                        alert(res.message || "Payment recorded");
-
-                        // FIX: use correct IDs (status-<id> and rental-<id>)
+                    if(res && res.success){
+                        // Show modal
+                        document.getElementById('paymentSuccessModal').style.display='flex';
+                        // Update UI as Paid
                         $('#status-'+requestId).text(res.new_status.charAt(0).toUpperCase()+res.new_status.slice(1)).attr('class','status '+res.new_status);
                         var card = $('#rental-'+requestId);
                         card.find('.button, .button.disabled').remove();
-                        // Display Paid state
-                        if(res.new_status === 'paid'){
-                            card.append('<span class="button disabled">✅ Paid (Waiting Dispatch)</span>');
-                        }
-
-                        // Optionally update revenue UI if you have one (example id "totalRevenue")
-                        if(res.amount){
-                            var revenueEl = $("#totalRevenue");
-                            if(revenueEl.length){
-                                let current = parseFloat(revenueEl.data('value') || 0);
-                                current += parseFloat(res.amount);
-                                revenueEl.data('value', current);
-                                revenueEl.text("💰 Total Revenue: ₹" + current.toFixed(2));
-                            }
-                        }
+                        if(res.new_status==='paid') card.append('<span class="button disabled">✅ Paid (Waiting Dispatch)</span>');
                     } else {
                         alert("⚠ " + (res.message || "Payment verification failed"));
                     }
@@ -563,17 +745,13 @@ function payNow(requestId, amount, title) {
                 "name": "<?php echo addslashes($_SESSION['name'] ?? '') ?>",
                 "email": "<?php echo addslashes($_SESSION['email'] ?? '') ?>"
             },
-            "theme": { "color": "#e190ba" }
+            "theme": { "color": "#BE5B50" }
         };
-
         var rzp = new Razorpay(options);
         rzp.open();
-    }).catch(err => {
-        alert("Network error contacting create_order.php");
-        console.error(err);
-    });
+    }).catch(err => { alert("Network error contacting create_order.php"); console.error(err); });
 }
-
 </script>
+
 </body>
 </html>
