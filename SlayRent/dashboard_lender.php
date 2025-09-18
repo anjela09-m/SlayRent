@@ -58,52 +58,211 @@ foreach($requests as $r) {
 <head>
 <meta charset="UTF-8">
 <title>Lender Dashboard | SlayRent</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
+/* --- Custom Color Palette & Fonts --- */
 :root {
-  --main-color: #e190ba;
-  --main-dark: #c17297;
-  --charcoal: #191919;
-  --pale-silver: #ECECEC;
-  --text-light: #ffffff;
+  --cream: #FBDB93;
+  --coral: #BE5B50;
+  --burgundy: #8A2D3B;
+  --dark-burgundy: #641B2E;
+  --white: #ffffff;
   --green: #4caf50;
   --orange: #ff9800;
   --red: #ff4d4d;
   --blue: #007bff;
-  --lavender:#f5e7f0;
 }
-* { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-body { margin:0; background: var(--lavender); color: var(--charcoal); }
+
+* { 
+  box-sizing: border-box; 
+  font-family: 'Candara', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+}
+
+body { 
+  margin: 0; 
+  background: var(--cream); 
+  color: var(--burgundy); 
+}
+
+/* Headings use Times New Roman */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Times New Roman', serif;
+  color: var(--dark-burgundy);
+}
 
 /* Sidebar */
 .sidebar {
-  width: 270px; background-color: var(--lavender); padding: 25px;
-  height: 100vh; position: fixed; top: 0; left: -270px; transition: 0.3s;
-  z-index: 1000; overflow-y: auto;
+  width: 270px; 
+  background-color: var(--dark-burgundy); 
+  padding: 25px;
+  height: 100vh; 
+  position: fixed; 
+  top: 0; 
+  left: -270px; 
+  transition: 0.3s;
+  z-index: 1000; 
+  overflow-y: auto;
 }
 .sidebar.active { left: 0; }
-.sidebar h3 { margin-bottom: 20px; font-size: 1.4em; }
-.sidebar a { display: block; background-color: var(--main-dark); color: var(--text-light); text-decoration:none; padding: 8px 12px; border-radius:6px; margin:6px 0; transition:0.3s; }
-.sidebar a:hover { background-color: var(--main-color); }
-.overlay { position: fixed; top: 0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display:none; z-index:999; }
-.overlay.active { display:block; }
-.main-content { margin-left:0; transition:0.3s; padding:30px; min-height:100vh; }
-.main-content.shifted { margin-left:270px; }
-.hamburger { font-size:24px; background:none; border:none; color: var(--charcoal); cursor:pointer; margin-bottom:15px; }
+.sidebar h3 { 
+  margin-bottom: 20px; 
+  font-size: 1.4em; 
+  color: var(--cream);
+  font-family: 'Times New Roman', serif;
+}
+.sidebar a { 
+  display: block; 
+  background-color: var(--coral); 
+  color: var(--white); 
+  text-decoration: none; 
+  padding: 8px 12px; 
+  border-radius: 6px; 
+  margin: 6px 0; 
+  transition: 0.3s; 
+  font-family: 'Candara', sans-serif;
+}
+.sidebar a:hover { 
+  background-color: var(--burgundy); 
+  transform: translateX(5px);
+}
+
+.overlay { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(100, 27, 46, 0.6); 
+  display: none; 
+  z-index: 999; 
+}
+.overlay.active { display: block; }
+
+.main-content { 
+  margin-left: 0; 
+  transition: 0.3s; 
+  padding: 30px; 
+  min-height: 100vh; 
+  background: var(--cream);
+}
+.main-content.shifted { margin-left: 270px; }
+
+.hamburger { 
+  font-size: 24px; 
+  background: none; 
+  border: none; 
+  color: var(--burgundy); 
+  cursor: pointer; 
+  margin-bottom: 15px; 
+  transition: color 0.3s ease;
+}
+.hamburger:hover {
+  color: var(--coral);
+}
 
 /* Cards */
-.card { background: var(--text-light); padding:25px; border-radius:12px; box-shadow:0 0 10px rgba(0,0,0,0.1); margin-bottom:30px; }
-.costume-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-.costume-card { background: var(--text-light); border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:15px; text-align:center; display:flex; flex-direction:column; }
-.costume-card img { width:100%; height:180px; object-fit:cover; border-radius:10px; margin-bottom:8px; }
-.button { background-color: var(--charcoal); color: var(--text-light); padding:8px 14px; border:none; border-radius:6px; cursor:pointer; margin:5px; display:inline-block; }
-.button:hover { background-color: var(--main-dark); }
-.button.disabled { background:#555; cursor:default; }
+.card { 
+  background: var(--white); 
+  padding: 25px; 
+  border-radius: 12px; 
+  box-shadow: 0 4px 15px rgba(138, 45, 59, 0.15); 
+  margin-bottom: 30px; 
+  border: 1px solid var(--cream);
+}
+.card h2, .card h3 {
+  color: var(--dark-burgundy);
+  font-family: 'Times New Roman', serif;
+}
+.card p {
+  color: var(--burgundy);
+  font-family: 'Candara', sans-serif;
+}
+
+.costume-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+  gap: 20px; 
+}
+.costume-card { 
+  background: var(--white); 
+  border-radius: 10px; 
+  box-shadow: 0 4px 15px rgba(138, 45, 59, 0.1); 
+  padding: 15px; 
+  text-align: center; 
+  display: flex; 
+  flex-direction: column; 
+  border: 1px solid var(--cream);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.costume-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(138, 45, 59, 0.2);
+}
+.costume-card img { 
+  width: 100%; 
+  height: 180px; 
+  object-fit: cover; 
+  border-radius: 10px; 
+  margin-bottom: 8px; 
+  border: 2px solid var(--cream);
+}
+.costume-card h4 {
+  color: var(--burgundy);
+  font-family: 'Times New Roman', serif;
+}
+.costume-card p {
+  color: var(--burgundy);
+  font-family: 'Candara', sans-serif;
+}
+
+.button { 
+  background-color: var(--coral); 
+  color: var(--white); 
+  padding: 8px 14px; 
+  border: none; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  margin: 5px; 
+  display: inline-block; 
+  font-family: 'Candara', sans-serif;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+.button:hover { 
+  background-color: var(--burgundy); 
+  transform: translateY(-1px);
+}
+.button.disabled { 
+  background: #999; 
+  cursor: default; 
+}
+.button.disabled:hover {
+  background: #999;
+  transform: none;
+}
 
 /* Requests */
-.request-box { background: var(--charcoal); padding:12px; margin-bottom:10px; border-radius:6px; font-size:14px; color:white; }
-.request-box span.status { font-weight:bold; }
+.request-box { 
+  background: var(--dark-burgundy); 
+  padding: 12px; 
+  margin-bottom: 10px; 
+  border-radius: 6px; 
+  font-size: 14px; 
+  color: var(--cream); 
+  font-family: 'Candara', sans-serif;
+}
+.request-box p {
+  color: var(--cream);
+  margin: 5px 0;
+}
+.request-box b {
+  font-family: 'Times New Roman', serif;
+}
+.request-box span.status { 
+  font-weight: bold; 
+}
 .status.pending { color: var(--orange); }
 .status.accepted { color: var(--green); }
 .status.paid { color: var(--blue); }
@@ -115,16 +274,100 @@ body { margin:0; background: var(--lavender); color: var(--charcoal); }
 .status.rejected { color: var(--red); }
 
 /* Completed section */
-.completed-requests { margin-top:20px; }
-.completed-log { background: #fff0f5; padding:10px; margin-bottom:6px; border-radius:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
-.completed-log .status.completed { font-weight:bold; color: var(--green); }
+.completed-requests { margin-top: 20px; }
+.completed-log { 
+  background: var(--white); 
+  padding: 10px; 
+  margin-bottom: 6px; 
+  border-radius: 8px; 
+  font-size: 13px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  box-shadow: 0 2px 8px rgba(138, 45, 59, 0.1); 
+  color: var(--burgundy);
+  font-family: 'Candara', sans-serif;
+}
+.completed-log .status.completed { 
+  font-weight: bold; 
+  color: var(--green); 
+}
 
 /* Modal */
-.modal { display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-.modal-content { background: var(--text-light); padding:20px; border-radius:12px; text-align:center; width:320px; color: var(--charcoal); position:relative; }
-.modal-content h3 { margin-top:0; }
-.close { position:absolute; top:10px; right:20px; font-size:22px; cursor:pointer; }
-#confirmDeleteBtn { background: crimson; color:white; }
+.modal { 
+  display: none; 
+  position: fixed; 
+  z-index: 2000; 
+  left: 0; 
+  top: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(100, 27, 46, 0.7); 
+  justify-content: center; 
+  align-items: center; 
+}
+.modal-content { 
+  background: var(--white); 
+  padding: 20px; 
+  border-radius: 12px; 
+  text-align: center; 
+  width: 320px; 
+  color: var(--burgundy); 
+  position: relative; 
+  border: 2px solid var(--cream);
+}
+.modal-content h3 { 
+  margin-top: 0; 
+  color: var(--dark-burgundy);
+  font-family: 'Times New Roman', serif;
+}
+.modal-content p {
+  font-family: 'Candara', sans-serif;
+}
+.close { 
+  position: absolute; 
+  top: 10px; 
+  right: 20px; 
+  font-size: 22px; 
+  cursor: pointer; 
+  color: var(--burgundy);
+  transition: color 0.3s ease;
+}
+.close:hover {
+  color: var(--coral);
+}
+#confirmDeleteBtn { 
+  background: var(--red); 
+  color: var(--white); 
+}
+#confirmDeleteBtn:hover {
+  background: #cc0000;
+}
+
+/* Stock status colors */
+.costume-card p[style*="color:red"] {
+  color: var(--red) !important;
+  font-weight: bold;
+}
+.costume-card p[style*="color:orange"] {
+  color: var(--orange) !important;
+  font-weight: bold;
+}
+.costume-card p[style*="color:green"] {
+  color: var(--green) !important;
+  font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-content { 
+    padding: 20px; 
+  }
+  .costume-grid { 
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+    gap: 15px; 
+  }
+}
 </style>
 </head>
 <body>
@@ -139,7 +382,7 @@ body { margin:0; background: var(--lavender); color: var(--charcoal); }
   <h3>📝 Rental Requests</h3>
   <div id="rentalRequestsContainer">
   <?php if(empty($requests)): ?>
-    <p>No requests.</p>
+    <p style="color: var(--cream);">No requests.</p>
   <?php else: foreach($requests as $r): 
         $status = strtolower(trim($r['status']));
         if($status==='completed') continue; // Skip completed in main loop
