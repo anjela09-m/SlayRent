@@ -1,9 +1,10 @@
 <?php
 session_start();
+
 include 'includes/config.php';
 
 // Fetch available costumes
-$stmt = $conn->prepare("SELECT * FROM costumes WHERE status = 'available'");
+$stmt = $conn->prepare("SELECT * FROM costumes WHERE availability = 'available'");
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -108,6 +109,23 @@ $showLoginMessage = !isset($_SESSION['user_type']) || $_SESSION['user_type'] !==
       font-size: 18px;
       margin-top: 50px;
     }
+
+    .badge {
+      display: inline-block;
+      background-color: #ff4d6d;
+      color: white;
+      font-size: 12px;
+      padding: 3px 8px;
+      margin-left: 10px;
+      border-radius: 12px;
+      font-weight: bold;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
   </style>
 </head>
 <body>
@@ -124,10 +142,16 @@ $showLoginMessage = !isset($_SESSION['user_type']) || $_SESSION['user_type'] !==
   <div class="costume-grid">
     <?php while ($row = $result->fetch_assoc()): ?>
       <div class="costume-card">
-        <img src="<?= htmlspecialchars($row['image_path']) ?>" alt="Costume Image">
+        <img src="<?= htmlspecialchars($row['image']) ?>">
         <h4><?= htmlspecialchars($row['title']) ?></h4>
         <p>₹<?= $row['price_per_day'] ?>/day</p>
         <p>Size: <?= htmlspecialchars($row['size']) ?> | <?= htmlspecialchars($row['category']) ?></p>
+        <p>
+          Quantity Available: <?= htmlspecialchars($row['quantity']) ?>
+          <?php if ($row['quantity'] == 1): ?>
+            <span class="badge">Only 1 Left!</span>
+          <?php endif; ?>
+        </p>
 
         <?php if (!$showLoginMessage): ?>
           <a href="costume_detail.php?id=<?= $row['id'] ?>" class="btn">See More</a>
