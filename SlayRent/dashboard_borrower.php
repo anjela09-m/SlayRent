@@ -21,17 +21,27 @@ if ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
-// Fetch costumes
+// Fetch costumes with average ratings per costume
 $costumes = [];
-$sql = "SELECT * FROM costumes ORDER BY id DESC";
+$sql = "SELECT c.*, 
+               AVG(r.rating) as avg_rating, 
+               COUNT(r.id) as review_count 
+        FROM costumes c 
+        LEFT JOIN reviews r ON c.id = r.costume_id 
+        GROUP BY c.id 
+        ORDER BY c.id DESC";
 $res = $conn->query($sql);
-while ($row = $res->fetch_assoc()) $costumes[] = $row;
+while ($row = $res->fetch_assoc()) {
+    $row['avg_rating'] = $row['avg_rating'] ? round($row['avg_rating'], 1) : 0;
+    $row['review_count'] = intval($row['review_count']);
+    $costumes[] = $row;
+}
 
-// Fetch borrower's rental requests with latest payment
+// Fetch borrower's rental requests with latest payment and costume details
 $requests = [];
 $qstmt = $conn->prepare("
     SELECT rr.id, rr.status, rr.request_date, rr.quantity, rr.total_price, 
-           c.title AS costume_title,
+           c.title AS costume_title, c.lender_id, c.id AS costume_id,
            p.status AS payment_status
     FROM rental_requests rr
     JOIN costumes c ON rr.costume_id = c.id
@@ -65,6 +75,38 @@ $qres = $qstmt->get_result();
 while ($row = $qres->fetch_assoc()) $requests[] = $row;
 $qstmt->close();
 
+// Check which completed rentals have costume reviews
+foreach ($requests as &$request) {
+    if ($request['status'] === 'completed') {
+        $reviewCheckStmt = $conn->prepare("
+            SELECT id FROM reviews 
+            WHERE borrower_id = ? AND costume_id = ?
+            ORDER BY created_at DESC LIMIT 1
+        ");
+        $reviewCheckStmt->bind_param("ii", $user_id, $request['costume_id']);
+        $reviewCheckStmt->execute();
+        $reviewResult = $reviewCheckStmt->get_result();
+        $request['review_id'] = $reviewResult->num_rows > 0 ? $reviewResult->fetch_assoc()['id'] : null;
+        $reviewCheckStmt->close();
+    }
+}
+
+// Fetch borrower's past costume reviews
+$pastReviews = [];
+$reviewStmt = $conn->prepare("
+    SELECT r.*, c.title as costume_title, l.shop_name
+    FROM reviews r
+    JOIN costumes c ON r.costume_id = c.id
+    JOIN lenders l ON r.lender_id = l.id
+    WHERE r.borrower_id = ?
+    ORDER BY r.created_at DESC
+");
+$reviewStmt->bind_param("i", $user_id);
+$reviewStmt->execute();
+$reviewRes = $reviewStmt->get_result();
+while ($row = $reviewRes->fetch_assoc()) $pastReviews[] = $row;
+$reviewStmt->close();
+
 $keyId = 'rzp_test_RDRydETJkRioj4';
 ?>
 <!DOCTYPE html>
@@ -88,6 +130,7 @@ $keyId = 'rzp_test_RDRydETJkRioj4';
   --red: #ff4d4d;
   --orange: #ff9800;
   --blue: #007bff;
+  --gold: #ffd700;
 }
 
 * { 
@@ -108,6 +151,320 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--dark-burgundy);
 }
 
+/* Header Controls for Hamburger + Notifications */
+.header-controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* Fixed Notification Styles - Replace your existing notification CSS with this */
+/* REPLACE your existing notification CSS with this fixed version */
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  position: relative;
+  z-index: 2000; /* Higher z-index */
+}
+
+.notification-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 20px;
+  z-index: 2100; /* Even higher */
+}
+
+.notification-bell {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--burgundy);
+  transition: color 0.3s ease;
+  padding: 5px;
+  z-index: 2101;
+}
+
+.notification-bell:hover {
+  color: var(--coral);
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background: var(--red);
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+  z-index: 2102;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.notification-dropdown {
+  position: fixed; /* Changed from absolute to fixed */
+  top: 70px; /* Adjust based on your header height */
+  right: 50px; /* Adjust based on your layout */
+  background: var(--white);
+  border: 3px solid var(--coral);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(138, 45, 59, 0.4);
+  width: 350px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 9999; /* Very high z-index */
+  display: none;
+}
+
+.notification-dropdown.active {
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-header {
+  padding: 15px 20px;
+  border-bottom: 2px solid var(--cream);
+  background: var(--coral);
+  color: white;
+  border-radius: 9px 9px 0 0; /* Adjusted for border */
+  font-weight: 600;
+  text-align: center;
+  font-family: 'Times New Roman', serif;
+  position: relative;
+  z-index: 9998;
+}
+
+.notification-item {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--cream);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+  background: var(--white);
+  z-index: 9997;
+}
+
+.notification-item:hover {
+  background-color: var(--light-gray);
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+  border-radius: 0 0 9px 9px; /* Adjusted for border */
+}
+
+.notification-item.unread {
+  background-color: #fff8f3;
+  border-left: 4px solid var(--coral);
+}
+
+.notification-title {
+  font-weight: 600;
+  color: var(--burgundy);
+  font-size: 14px;
+  margin-bottom: 5px;
+  font-family: 'Times New Roman', serif;
+}
+
+.notification-message {
+  color: var(--burgundy);
+  font-size: 13px;
+  line-height: 1.4;
+  margin-bottom: 5px;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: var(--coral);
+  font-style: italic;
+}
+
+.notification-mark-read {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  z-index: 9996;
+}
+
+.notification-mark-read:hover {
+  background: #2e7d32;
+}
+
+.notification-empty {
+  padding: 30px 20px;
+  text-align: center;
+  color: var(--burgundy);
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.notification-modal {
+  display: none;
+  position: fixed;
+  z-index: 10000; /* Highest z-index */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(100, 27, 46, 0.8);
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-modal-content {
+  background: var(--white);
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0px 8px 25px rgba(0,0,0,0.3);
+  max-width: 450px;
+  width: 90%;
+  border: 2px solid var(--coral);
+  animation: modalSlideIn 0.3s ease;
+  position: relative;
+  z-index: 10001;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.notification-modal h3 {
+  color: var(--burgundy);
+  font-family: 'Times New Roman', serif;
+  margin-bottom: 15px;
+  font-size: 1.3em;
+}
+
+.notification-modal p {
+  color: var(--burgundy);
+  font-family: 'Candara', sans-serif;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  font-size: 1em;
+}
+
+.notification-modal button {
+  margin: 8px 5px;
+  padding: 12px 20px;
+  background: var(--coral);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Candara', sans-serif;
+  transition: background 0.3s ease;
+  font-size: 1em;
+  font-weight: 500;
+}
+
+.notification-modal button:hover {
+  background: var(--burgundy);
+}
+
+/* Ensure other elements don't interfere */
+.sidebar {
+  z-index: 1000; /* Lower than notifications */
+}
+
+.overlay {
+  z-index: 999; /* Lower than notifications */
+}
+
+.main-content {
+  position: relative;
+  z-index: 1; /* Lower than notifications */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .notification-dropdown {
+    width: 300px;
+    right: 20px;
+    top: 60px;
+  }
+  
+  .notification-modal-content {
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .header-controls {
+    margin-bottom: 10px;
+  }
+}
+
+/* Ensure sidebar doesn't cover notifications */
+.sidebar {
+  z-index: 1000;
+}
+
+.overlay {
+  z-index: 999;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .notification-dropdown {
+    width: 300px;
+    right: -80px;
+  }
+  
+  .notification-modal-content {
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .header-controls {
+    margin-bottom: 10px;
+  }
+}
 /* Sidebar */
 .sidebar { 
   width: 320px; 
@@ -136,6 +493,7 @@ h1, h2, h3, h4, h5, h6 {
   margin: 12px 0; 
   font-size: 0.95em; 
   transition: color 0.3s ease;
+  cursor: pointer;
 }
 .sidebar a:hover {
   color: var(--coral);
@@ -206,6 +564,39 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--green); 
 }
 
+/* Reviews section in sidebar */
+.sidebar .reviews-section { 
+  margin-top: 20px; 
+}
+.sidebar .review-item {
+  background: var(--cream);
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  font-size: 0.8em;
+}
+.sidebar .review-item .stars {
+  color: var(--gold);
+  font-size: 0.9em;
+  margin-bottom: 2px;
+}
+.sidebar .review-item .review-title {
+  font-weight: 600;
+  color: var(--burgundy);
+  margin-bottom: 2px;
+}
+.sidebar .review-item .review-shop {
+  color: var(--burgundy);
+  font-size: 0.75em;
+  opacity: 0.8;
+  margin-bottom: 2px;
+}
+.sidebar .review-item .review-comment {
+  color: var(--burgundy);
+  font-size: 0.75em;
+  opacity: 0.8;
+}
+
 /* Overlay */
 .overlay { 
   position: fixed; 
@@ -237,7 +628,6 @@ h1, h2, h3, h4, h5, h6 {
   border: none; 
   color: var(--burgundy); 
   cursor: pointer; 
-  margin-bottom: 15px; 
   transition: color 0.3s ease;
 }
 .hamburger:hover {
@@ -309,7 +699,7 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center; 
   box-shadow: 0 4px 15px rgba(138, 45, 59, 0.15); 
   color: var(--burgundy); 
-  height: 420px; 
+  height: 470px; 
   display: flex; 
   flex-direction: column; 
   border: 1px solid var(--cream); 
@@ -350,6 +740,23 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Times New Roman', serif;
 }
 
+/* Rating display */
+.rating-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px 0;
+  font-size: 0.9em;
+}
+.stars {
+  color: var(--gold);
+  margin-right: 5px;
+}
+.rating-text {
+  color: var(--burgundy);
+  font-weight: 500;
+}
+
 /* Buttons */
 .button { 
   background: var(--coral); 
@@ -379,6 +786,15 @@ h1, h2, h3, h4, h5, h6 {
   transform: none;
 }
 
+.button.review-btn {
+  background: var(--green);
+  font-size: 0.8em;
+  padding: 5px 12px;
+}
+.button.review-btn:hover {
+  background: #2e7d32;
+}
+
 /* Status colors */
 .status { 
   font-weight: bold; 
@@ -395,7 +811,7 @@ h1, h2, h3, h4, h5, h6 {
 .status.returned { color: #d35400; }
 .status.completed { color: var(--green); }
 
-/* Payment Success Modal */
+/* Modals */
 .modal { 
   display: none; 
   position: fixed; 
@@ -414,7 +830,8 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 12px; 
   text-align: center; 
   box-shadow: 0px 6px 15px rgba(0,0,0,0.2); 
-  max-width: 350px; 
+  max-width: 400px; 
+  width: 90%;
   border: 2px solid var(--cream);
 }
 .modal-content h3 {
@@ -426,7 +843,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Candara', sans-serif;
 }
 .modal-content button { 
-  margin-top: 15px; 
+  margin: 8px 5px; 
   padding: 10px 18px; 
   background: var(--coral); 
   color: var(--white); 
@@ -438,6 +855,54 @@ h1, h2, h3, h4, h5, h6 {
 }
 .modal-content button:hover {
   background: var(--burgundy);
+}
+.modal-content button.secondary {
+  background: #6c757d;
+}
+.modal-content button.secondary:hover {
+  background: #5a6268;
+}
+
+/* Review form */
+.review-form {
+  text-align: left;
+}
+.review-form .form-group {
+  margin-bottom: 15px;
+}
+.review-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: var(--burgundy);
+}
+.review-form .star-rating {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.review-form .star {
+  font-size: 24px;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.review-form .star:hover,
+.review-form .star.active {
+  color: var(--gold);
+}
+.review-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid var(--coral);
+  border-radius: 6px;
+  font-family: 'Candara', sans-serif;
+  resize: vertical;
+  min-height: 80px;
+}
+.review-form textarea:focus {
+  outline: none;
+  border-color: var(--burgundy);
 }
 
 /* Search results info */
@@ -469,7 +934,11 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 768px) {
   .main-content { padding: 20px; }
   .costume-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-  .costume-card { height: 380px; }
+  .costume-card { height: 430px; }
+  .notification-dropdown {
+    width: 300px;
+    right: -100px;
+  }
 }
 </style>
 </head>
@@ -479,6 +948,7 @@ h1, h2, h3, h4, h5, h6 {
 <div class="sidebar" id="sidebar">
   <h3><?= htmlspecialchars($name) ?></h3>
   <a href="edit_borrower_profile.php">✏️ Edit Profile</a>
+  <a href="#" onclick="showReviewsSection()">⭐ My Reviews (<?= count($pastReviews) ?>)</a>
   <a href="#">📅 Joined <?= $joined_days ?> days ago</a>
 
   <div class="rental-requests">
@@ -525,10 +995,32 @@ h1, h2, h3, h4, h5, h6 {
             <div class="completed-log" id="completed-<?= $req['id'] ?>">
                 <span><?= htmlspecialchars($req['costume_title']) ?></span>
                 <span class="status completed">Completed</span>
+                <?php if(!$req['review_id']): ?>
+                    <button class="button review-btn" onclick="openReviewModal(<?= $req['id'] ?>, <?= $req['costume_id'] ?>, '<?= addslashes($req['costume_title']) ?>')">⭐ Review</button>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
   </div>
+
+  <!-- Reviews section in sidebar -->
+  <div class="reviews-section" id="reviewsSection" style="display:none;">
+    <h4>⭐ My Costume Reviews</h4>
+    <?php if(empty($pastReviews)): ?>
+        <p style="font-size:0.8em;color:var(--cream);">No reviews yet.</p>
+    <?php else: foreach($pastReviews as $review): ?>
+        <div class="review-item">
+            <div class="stars"><?= str_repeat('★', $review['rating']) . str_repeat('☆', 5-$review['rating']) ?></div>
+            <div class="review-title"><?= htmlspecialchars($review['costume_title']) ?></div>
+            <div class="review-shop">from <?= htmlspecialchars($review['shop_name']) ?></div>
+            <?php if($review['comment']): ?>
+                <div class="review-comment"><?= htmlspecialchars(substr($review['comment'], 0, 60)) . (strlen($review['comment']) > 60 ? '...' : '') ?></div>
+            <?php endif; ?>
+        </div>
+    <?php endforeach; endif; ?>
+    <a href="#" onclick="hideReviewsSection()" style="font-size:0.8em;margin-top:10px;">← Back to Rentals</a>
+  </div>
+
   <a href="logout.php">🚪 Logout</a>
 </div>
 
@@ -536,7 +1028,27 @@ h1, h2, h3, h4, h5, h6 {
 
 <!-- Main Content -->
 <div class="main-content" id="mainContent">
-  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <div class="header-controls">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    
+    <!-- Notification Bell Component -->
+    <div class="notification-container">
+      <button class="notification-bell" id="notificationBell" onclick="toggleNotifications()">
+        🔔
+        <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+      </button>
+      
+      <div class="notification-dropdown" id="notificationDropdown">
+        <div class="notification-header">
+          <span>Notifications</span>
+        </div>
+        <div id="notificationList">
+          <div class="notification-empty">No new notifications</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <h2>Welcome, <?= htmlspecialchars($name) ?> 👋</h2>
   
   <!-- Search Bar -->
@@ -559,6 +1071,14 @@ h1, h2, h3, h4, h5, h6 {
         <img src="<?= htmlspecialchars($c['image']) ?>" alt="Costume">
         <div class="card-content">
           <h4><?= htmlspecialchars($c['title']) ?></h4>
+          <div class="rating-display">
+            <?php if($c['avg_rating'] > 0): ?>
+                <span class="stars"><?= str_repeat('★', floor($c['avg_rating'])) . (($c['avg_rating'] - floor($c['avg_rating'])) >= 0.5 ? '★' : '') . str_repeat('☆', 5 - ceil($c['avg_rating'])) ?></span>
+                <span class="rating-text"><?= $c['avg_rating'] ?> (<?= $c['review_count'] ?>)</span>
+            <?php else: ?>
+                <span class="rating-text">No reviews yet</span>
+            <?php endif; ?>
+          </div>
           <p>₹<?= htmlspecialchars($c['price_per_day']) ?>/day | Size: <?= htmlspecialchars($c['size']) ?></p>
           <p>Quantity: <?= intval($c['quantity']) ?></p>
           <p class="status <?= $statusQty ?>"><?= $statusQty=="available"?"Available":($statusQty=="soon"?"Soon":"Unavailable") ?></p>
@@ -584,7 +1104,191 @@ h1, h2, h3, h4, h5, h6 {
     </div>
 </div>
 
+<!-- Review Modal -->
+<div class="modal" id="reviewModal">
+    <div class="modal-content">
+        <h3>⭐ Write a Review</h3>
+        <form class="review-form" id="reviewForm">
+            <input type="hidden" id="rentalRequestId" name="rental_request_id">
+            <input type="hidden" id="costumeId" name="costume_id">
+            
+            <div class="form-group">
+                <label>Rating:</label>
+                <div class="star-rating" id="starRating">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                </div>
+                <input type="hidden" id="ratingValue" name="rating" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="reviewComment">Comment (optional):</label>
+                <textarea id="reviewComment" name="comment" placeholder="Share your experience with this costume..."></textarea>
+            </div>
+            
+            <button type="submit">Submit Review</button>
+            <button type="button" class="secondary" onclick="closeReviewModal()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<!-- Notification Modal -->
+<div class="notification-modal" id="notificationModal">
+  <div class="notification-modal-content">
+    <h3 id="modalTitle">Notification</h3>
+    <p id="modalMessage"></p>
+    <button onclick="closeNotificationModal()">OK</button>
+  </div>
+</div>
+
 <script>
+// Notification System JavaScript
+let notificationDropdownOpen = false;
+let currentNotifications = [];
+
+// Toggle notification dropdown
+function toggleNotifications() {
+  const dropdown = document.getElementById('notificationDropdown');
+  
+  if (notificationDropdownOpen) {
+    dropdown.classList.remove('active');
+    notificationDropdownOpen = false;
+  } else {
+    loadNotifications();
+    dropdown.classList.add('active');
+    notificationDropdownOpen = true;
+  }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+  const container = document.querySelector('.notification-container');
+  if (!container.contains(event.target) && notificationDropdownOpen) {
+    document.getElementById('notificationDropdown').classList.remove('active');
+    notificationDropdownOpen = false;
+  }
+});
+
+// Load notifications from server
+function loadNotifications() {
+  fetch('get_notifications.php')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        currentNotifications = data.notifications;
+        updateNotificationUI(data.notifications, data.count);
+      } else {
+        console.error('Failed to load notifications:', data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error loading notifications:', error);
+    });
+}
+
+// Update notification UI
+function updateNotificationUI(notifications, count) {
+  const badge = document.getElementById('notificationBadge');
+  const list = document.getElementById('notificationList');
+  
+  // Update badge
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+  
+  // Update notification list
+  if (notifications.length === 0) {
+    list.innerHTML = '<div class="notification-empty">No new notifications</div>';
+  } else {
+    list.innerHTML = notifications.map(notification => `
+      <div class="notification-item unread" onclick="showNotificationModal(${notification.id}, '${escapeHtml(notification.title)}', '${escapeHtml(notification.message)}')">
+        <div class="notification-title">${escapeHtml(notification.title)}</div>
+        <div class="notification-message">${escapeHtml(notification.message)}</div>
+        <div class="notification-time">${formatTime(notification.created_at)}</div>
+        <button class="notification-mark-read" onclick="event.stopPropagation(); markAsRead(${notification.id})" title="Mark as read">✓</button>
+      </div>
+    `).join('');
+  }
+}
+
+// Show notification modal
+function showNotificationModal(notificationId, title, message) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMessage').textContent = message;
+  document.getElementById('notificationModal').style.display = 'flex';
+  
+  // Mark as read when opened
+  markAsRead(notificationId);
+}
+
+// Close notification modal
+function closeNotificationModal() {
+  document.getElementById('notificationModal').style.display = 'none';
+}
+
+// Mark notification as read
+function markAsRead(notificationId) {
+  const formData = new FormData();
+  formData.append('notification_id', notificationId);
+  
+  fetch('mark_notification_read.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Reload notifications to update UI
+      loadNotifications();
+    }
+  })
+  .catch(error => {
+    console.error('Error marking notification as read:', error);
+  });
+}
+
+// Utility functions
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatTime(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+
+// Auto-refresh notifications every 30 seconds
+setInterval(function() {
+  if (!notificationDropdownOpen) {
+    loadNotifications();
+  }
+}, 30000);
+
+// Load notifications when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  loadNotifications();
+});
+
+// Existing JavaScript functions continue below...
+
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('active');
   document.getElementById('overlay').classList.toggle('active');
@@ -592,6 +1296,114 @@ function toggleSidebar(){
 }
 
 function closeModal(){ document.getElementById('paymentSuccessModal').style.display='none'; }
+
+function showReviewsSection() {
+    document.getElementById('reviewsSection').style.display = 'block';
+    document.querySelector('.rental-requests').style.display = 'none';
+}
+
+function hideReviewsSection() {
+    document.getElementById('reviewsSection').style.display = 'none';
+    document.querySelector('.rental-requests').style.display = 'block';
+}
+
+// Review Modal Functions
+function openReviewModal(rentalRequestId, costumeId, costumeTitle) {
+    document.getElementById('rentalRequestId').value = rentalRequestId;
+    document.getElementById('costumeId').value = costumeId;
+    document.getElementById('reviewModal').style.display = 'flex';
+    document.querySelector('#reviewModal h3').textContent = '⭐ Review: ' + costumeTitle;
+    
+    // Reset form
+    document.getElementById('reviewForm').reset();
+    document.getElementById('ratingValue').value = '';
+    document.querySelectorAll('.star').forEach(star => star.classList.remove('active'));
+}
+
+function closeReviewModal() {
+    document.getElementById('reviewModal').style.display = 'none';
+}
+
+// Star rating functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star');
+    
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.getAttribute('data-rating');
+            document.getElementById('ratingValue').value = rating;
+            
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        });
+        
+        star.addEventListener('mouseover', function() {
+            const rating = this.getAttribute('data-rating');
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.style.color = '#ffd700';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+    
+    document.getElementById('starRating').addEventListener('mouseleave', function() {
+        const currentRating = document.getElementById('ratingValue').value;
+        stars.forEach((s, index) => {
+            if (index < currentRating) {
+                s.style.color = '#ffd700';
+            } else {
+                s.style.color = '#ddd';
+            }
+        });
+    });
+});
+
+// Review form submission
+document.getElementById('reviewForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const rating = document.getElementById('ratingValue').value;
+    
+    if (!rating) {
+        alert('Please select a rating');
+        return;
+    }
+    
+    fetch('submit_review.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Review submitted successfully!');
+            closeReviewModal();
+            // Remove review button from completed rental
+            const rentalId = document.getElementById('rentalRequestId').value;
+            const reviewBtn = document.querySelector(`#completed-${rentalId} .review-btn`);
+            if (reviewBtn) {
+                reviewBtn.remove();
+            }
+            // Refresh page to show updated reviews
+            location.reload();
+        } else {
+            alert('❌ ' + (data.error || 'Failed to submit review'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Network error occurred');
+    });
+});
 
 // --- Search Functionality ---
 const searchKeywords = {
@@ -699,7 +1511,9 @@ function updateStatus(rentalId, newStatus){
         else if(ns==='dispatched') card.append('<button class="button" onclick="updateStatus('+rentalId+',\'delivered\')">📦 Confirm Delivery</button>');
         else if(ns==='delivered') card.append('<button class="button" onclick="updateStatus('+rentalId+',\'returned\')">🔄 Return Item</button>');
         else if(ns==='returned') card.append('<span class="button disabled">⏳ Waiting for Lender Confirmation</span>');
-        else if(ns==='completed') card.replaceWith('<div class="completed-log" id="completed-'+rentalId+'"><span>'+$('#status-'+rentalId).text()+'</span><span class="status completed">Completed</span></div>');
+        else if(ns==='completed') {
+            card.replaceWith('<div class="completed-log" id="completed-'+rentalId+'"><span>'+card.find('h5').text()+'</span><span class="status completed">Completed</span><button class="button review-btn" onclick="openReviewModal('+rentalId+', '+res.costume_id+', \''+card.find('h5').text().replace(/'/g, '\\\'').replace(/"/g, '\\"')+'\')">⭐ Review</button></div>');
+        }
         else if(ns==='rejected') card.append('<span class="button disabled">❌ Rejected</span>');
     },'json').fail(function(xhr){ alert("❌ Server error: " + xhr.responseText); });
 }
