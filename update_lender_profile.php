@@ -14,7 +14,7 @@ $email     = $_POST['email'];
 $auth_id   = $_POST['auth_id'];
 
 $stmt = $conn->prepare("UPDATE lenders SET shop_name = ?, contact = ?, email = ?, auth_id = ? WHERE id = ?");
-$stmt->bind_param("sssssi", $shop_name,  $contact, $email, $auth_id, $lender_id);
+$stmt->bind_param("sssss", $shop_name,  $contact, $email, $auth_id, $lender_id);
 
 if ($stmt->execute()) {
   echo "<script>alert('✅ Profile updated successfully!'); window.location.href = 'dashboard_lender.php';</script>";
